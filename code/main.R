@@ -30,10 +30,10 @@ if (!require("TSA")) {
    install.packages("TSA")
    stopifnot(require("TSA"))
 }
-business<-jsonlite::stream_in(file("business_city.json"))
-review<-jsonlite::stream_in(file("review_city.json"))
-tip<-jsonlite::stream_in(file("tip_city.json"))
-user<-jsonlite::stream_in(file("user_city.json"))
+business<-jsonlite::stream_in(file("data/business_city.json"))
+review<-jsonlite::stream_in(file("data/review_city.json"))
+tip<-jsonlite::stream_in(file("data/tip_city.json"))
+user<-jsonlite::stream_in(file("data/user_city.json"))
 #First, we need to find all the pubs by using the tag:alcohol in the business
 #Then we need to decide what tags to stay.
 all_pubs<-data.frame()
@@ -47,7 +47,7 @@ for (i in length(business$name):1)
    if(judgement=="full_bar" | business$attributes$Alcohol[i]=="full_bar" )
      {
      #find the pub and record it.
-    all_pubs_pre<-data.frame(name=business$name[i],business_id=business$business_id[i],review_count=business$review_count[i],is.open=business$is_open[i],stars=business$stars[i],attributes=business$attributes[i,],hours=business$hours[i,],categories=business$categories[i])
+    all_pubs_pre<-data.frame(name=business$name[i],business_id=business$business_id[i],review_count=business$review_count[i],is.open=business$is_open[i],stars=business$stars[i],attributes=business$attributes[i,],hours=business$hours[i,],categories=business$categories[i],state=business$state[i],city=business$city[i])
     all_pubs<-rbind(all_pubs,all_pubs_pre)
    }
    }
@@ -100,11 +100,6 @@ opentime <- function(time){
    return(opentime)
 }
 
-
-
-
-
-
 ave_star<-quantile(all_pubs$stars)[3]
 ##############################################################################################################
 #Test the influence of takeout
@@ -153,6 +148,15 @@ key_word<-word[8]
 all_stars_with_key<-all_review$stars[which(grepl(key_word,all_review$text))]
 all_stars_without_key<-all_review$stars[-which(grepl(key_word,all_review$text))]
 wilcox.test(all_stars_with_key,all_stars_without_key,alternative="less")
+
+################ how different types of beer related to stars ######################
+AlcoholDrinks <- c("beer","Ale","wine","Rum","rum","Brandy","Gin","gin","Whisky","whisky","Whiskey","whiskey","Texas whiskey","Vodka","Absinthe","Tequila","cocktails","Cocktails")
+plotWordStar(all_review$stars,all_review$text,wordList=AlcoholDrinks,mfrow = c(1,2))
+
+# Cocktails,Absinthe, Vodka, Whiskey, Brandy, Rum, wine are good for restaurant.
+# beer, rum, gin, tequila are fairly normal for business.
+
+
 ######################################################
 #Test the existence of wifi's influence on ratings.
 plotWordStar(all_pubs$stars,all_pubs$attributes.WiFi,wordList=c("u'no'","u'free'","'no'","'free'","u'paid'","'paid'","None" ),mfrow = c(2,4))
@@ -201,3 +205,48 @@ low_time<-opentime(low_all)
 high_time<-opentime(high_all)
 wilcox.test(low_time,high_time,alternative="less")
 #Can't refuse Ho, so Ratings are not related with opentime on Friday.
+
+############################# some other terms that may affect rating ########################################
+terms <- c("atmosphere","service","kids","family","clean")
+plotWordStar(all_review$stars,all_review$text,wordList=terms,mfrow = c(1,2))
+# good atmosphere are good
+# not for kids
+# normal rating pubs are clean
+
+## question: what kind of atmosphere?
+#all_review1 <- all_review[1:1000,]
+index <- str_detect(all_review[,'text'],"atmosphere")
+atomsphere_words <- c("cozy","festive","amazing","great","free","inviting","chill","warm","welcoming","cool","great","nice","comfortable","casual")
+plotWordStar(all_review$stars[index],all_review$text[index],wordList=atomsphere_words,mfrow = c(1,2))
+
+# casual, welcoming, inviting, cozy atmosphere are good for rating
+############################ does different city, state has different preference? #######################3
+# preference of atmosphere
+index1 <- all_review$business_id==all_pubs$business_id
+index2 <- all_pubs$state == 'OH'
+length(all_pubs$state)
+sum(is.na(all_pubs$state))
+plotWordStar(all_review$stars[all_review$business_id==all_pubs$business_id & all_pubs$state == 'OH'],all_review$text[all_review$business_id==all_pubs$business_id & all_pubs$state == 'OH'],wordList=atomsphere_words,mfrow = c(1,2))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
