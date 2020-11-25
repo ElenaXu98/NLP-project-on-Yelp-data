@@ -222,19 +222,57 @@ plotWordStar(all_review$stars[index],all_review$text[index],wordList=atomsphere_
 # casual, welcoming, inviting, cozy atmosphere are good for rating
 ############################ does different city, state has different preference? #######################3
 # preference of atmosphere
-index1 <- all_review$business_id==all_pubs$business_id
-index2 <- all_pubs$state == 'OH'
-length(all_pubs$state)
-sum(is.na(all_pubs$state))
-plotWordStar(all_review$stars[all_review$business_id==all_pubs$business_id & all_pubs$state == 'OH'],all_review$text[all_review$business_id==all_pubs$business_id & all_pubs$state == 'OH'],wordList=atomsphere_words,mfrow = c(1,2))
+library(dplyr)
+review_pubs <- left_join(all_review,all_pubs,by="business_id")
+plotWordStar(review_pubs$stars.y[review_pubs$state=="WI"],review_pubs$text[review_pubs$state=="WI"],wordList=atomsphere_words,mfrow = c(1,2))
+plotWordStar(review_pubs$stars.y[review_pubs$state=="OH"],review_pubs$text[review_pubs$state=="OH"],wordList=atomsphere_words,mfrow = c(1,2))
+plotWordStar(review_pubs$stars.y[review_pubs$state=="PA"],review_pubs$text[review_pubs$state=="PA"],wordList=atomsphere_words,mfrow = c(1,2))
+plotWordStar(review_pubs$stars.y[review_pubs$state=="IL"],review_pubs$text[review_pubs$state=="IL"],wordList=atomsphere_words,mfrow = c(1,2))
 
 
 
+####################################### NLP analysis of review text ########################################
+library(spacyr)
+library(dplyr)
+spacy_initialize(model = "en_core_web_sm")
+
+##### choose pubs and choose WI state 
+###### get the frequency of noun
+review_pubs <- left_join(all_review,all_pubs,how="left",on="business_id") #314845 entries
+sum(is.na(review_pubs$state)) # 267410 entries
+review_pubs <- review_pubs[is.na(review_pubs$state)==FALSE,] #47435 entries
+review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  #8931 entries
+txt <- review_pubs_WI[,'text']
+
+token <- spacy_parse(txt,entity = TRUE, lemma = FALSE,nounphrase = TRUE)  # take too many times 
+token_noun <- token[token$pos=="NOUN",]
+frequency_of_noun <- table(token_noun$token)
+sort(frequency_of_noun,decreasing = TRUE)[1:20]
+
+###### get the frequency of abjectives and adverb 
+
+token_abj <- token[token$pos == "ADJ",]
+frequency_of_adj <- table(token_abj$token)
+sort(frequency_of_adj,decreasing = TRUE)[1:20]
 
 
+##### words about alcohol drinks 
+AlcoholDrinks <- c("beer","Ale","wine","Rum","rum","Brandy","Gin","gin","Whisky","whisky","Whiskey","whiskey","Texas whiskey","Vodka","Absinthe","Tequila","cocktails","Cocktails")
+AlcoholBrands <- c("Smirnoff","Bacardi","Jack Daniel's","Crown Royal","Absolut","crown","bacardi","smirnoff")
+Cocktails <- c("martini","Martini","Long Island","pink lady","champagne","Manhattan","coquito")
 
+Alcohol <- matrix(0,nrow=33,ncol = 2)
+colnames(Alcohol) <- c("noun","frequency")
+Alcohol[,1] <- c(AlcoholDrinks,AlcoholBrands,Cocktails)
+for (rownames(frequency_of_noun)%in%Alcohol[,1]) {
+   
+}
+inner_join(Alcohol,freq,how="inner",on="noun")
 
-
+freq <- matrix(0,nrow=dim(frequency_of_noun),ncol=2)
+freq[,1] <- rownames(frequency_of_noun)
+freq[,2] <- as.vector(frequency_of_noun)
+colnames(freq) <- c("noun","frequency")
 
 
 
