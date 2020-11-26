@@ -236,25 +236,22 @@ plotWordStar(review_pubs$stars.y[review_pubs$state=="IL"],review_pubs$text[revie
 
 
 ####################################### NLP analysis of review text ########################################
-spacy_initialize(model = "en_core_web_sm")
 
 ##### choose pubs and choose WI state 
 ###### get the frequency of noun
-review_pubs <- left_join(all_review,all_pubs,how="left",on="business_id") #314845 entries
+review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") #314845 entries
 sum(is.na(review_pubs$state)) # 267410 entries
 review_pubs <- review_pubs[is.na(review_pubs$state)==FALSE,] #47435 entries
 review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  #8931 entries
 txt <- review_pubs_WI[,'text']
 
-token <- spacy_parse(txt,entity = TRUE, lemma = FALSE,nounphrase = TRUE)  # take too many times 
-token_noun <- token[token$pos=="NOUN",]
-frequency_of_noun <- table(token_noun$token)
+Noun<-unnest_tokens(tibble(txt=all_review$text),word, txt) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%pull(word)
+frequency_of_noun <- table(Noun)
 sort(frequency_of_noun,decreasing = TRUE)[1:20]
 
 ###### get the frequency of abjectives and adverb 
-
-token_abj <- token[token$pos == "ADJ",]
-frequency_of_adj <- table(token_abj$token)
+Adj<-unnest_tokens(tibble(txt=all_review$text),word, txt) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Adjective")) %>%pull(word)
+frequency_of_adj <- table(Adj)
 sort(frequency_of_adj,decreasing = TRUE)[1:20]
 
 
