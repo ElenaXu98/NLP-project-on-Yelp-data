@@ -30,6 +30,10 @@ if (!require("TSA")) {
    install.packages("TSA")
    stopifnot(require("TSA"))
 }
+if (!require("spacyr")) {
+  install.packages("spacyr")
+  stopifnot(require("spacyr"))
+}
 business<-jsonlite::stream_in(file("data/business_city.json"))
 review<-jsonlite::stream_in(file("data/review_city.json"))
 tip<-jsonlite::stream_in(file("data/tip_city.json"))
@@ -232,8 +236,6 @@ plotWordStar(review_pubs$stars.y[review_pubs$state=="IL"],review_pubs$text[revie
 
 
 ####################################### NLP analysis of review text ########################################
-library(spacyr)
-library(dplyr)
 spacy_initialize(model = "en_core_web_sm")
 
 ##### choose pubs and choose WI state 
