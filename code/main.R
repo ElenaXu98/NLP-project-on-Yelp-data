@@ -72,6 +72,14 @@ sq1 <- sqldf("select text, count(text ) count from all_review group by text havi
 all_review<-subset(all_review,!(text%in%sq1$text))
 all_user<-subset(all_user,user_id%in%all_review$user_id)
 all_tip<-subset(all_tip,user_id%in%all_user$user_id)
+#Below is the change to lower letter and some abbreviation in review.
+all_review$text<-tolower(all_review$text)
+all_review$text<-gsub("\'t"," not",all_review$text)
+all_review$text<-gsub("\'d"," would",all_review$text)
+all_review$text<-gsub("he\'s","he is",all_review$text)
+all_review$text<-gsub("she\'s","she is",all_review$text)
+all_review$text<-gsub("i\'m","i am",all_review$text)
+all_review$text<-gsub("it\'s","it is",all_review$text)
 
 #Below is the function for plots in all_pubs.
 plotWordStar <- function(stars,DTM,wordList,mfrow = c(4,4)) {
