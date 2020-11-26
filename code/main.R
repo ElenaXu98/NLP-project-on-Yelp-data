@@ -30,9 +30,9 @@ if (!require("TSA")) {
    install.packages("TSA")
    stopifnot(require("TSA"))
 }
-if (!require("spacyr")) {
-  install.packages("spacyr")
-  stopifnot(require("spacyr"))
+if (!require("tidyverse")) {
+   install.packages("tidyverse")
+   stopifnot(require("tidyverse"))
 }
 business<-jsonlite::stream_in(file("data/business_city.json"))
 review<-jsonlite::stream_in(file("data/review_city.json"))
