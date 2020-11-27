@@ -424,7 +424,7 @@ business_id <- unique(review_pubs_WI$business_id)
 TimeSenti <- c()
 MenuSenti <- c()
 StaffSenti <- c()
-WaitressSenti <- c()
+ServerSenti <- c()
 bartenderSenti <- c()
 for (i in business_id) {
   TimeIndex <- grepl("time",review_pubs_WI$text[review_pubs_WI$business_id==i])
@@ -439,9 +439,10 @@ for (i in business_id) {
   StaffSentiBus <- mean(sentiment_review_WI[StaffIndex & review_pubs_WI$business_id==i])
   StaffSenti <- c(StaffSenti,StaffSentiBus)
   
-  WaitressIndex <- grepl("waitress",review_pubs_WI$text[review_pubs_WI$business_id==i])
-  WaitressSentiBus <- mean(sentiment_review_WI[WaitressIndex & review_pubs_WI$business_id==i])
-  WaitressSenti <- c(WaitressSenti,WaitressSentiBus)
+  ServerIndex <- grepl("server",review_pubs_WI$text[review_pubs_WI$business_id==i])
+  ServerSentiBus <- mean(sentiment_review_WI[ServerIndex & review_pubs_WI$business_id==i])
+  ServerSenti <- c(ServerSenti,
+ServerSentiBus)
   
   bartenderIndex <- grepl("bartender",review_pubs_WI$text[review_pubs_WI$business_id==i])
   bartenderSentiBus <- mean(sentiment_review_WI[bartenderIndex & review_pubs_WI$business_id==i])
