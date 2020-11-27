@@ -222,6 +222,7 @@ opentime <- function(time){
    return(opentime)
 }
 
+Test<-data.frame(No=1:8,H_0=rep(NA,8),method=rep(NA,8),p_value=rep(NA,8))
 ave_star<-quantile(all_pubs$stars)[3]
 ##############################################################################################################
 ###Test the influence of takeout
@@ -235,6 +236,9 @@ low_takeout_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_takeout_yes,high_takeout_no,low_takeout_yes,low_takeout_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
+Test$H_0[1]<-"High Ratings are not related with the existence of takeout"
+Test$method[1]<-"chisq-test"
+Test$p_value[1]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with takout
 ##############################################################################################################
 #Test the influence of GoodforGroups
@@ -248,6 +252,9 @@ low_groups_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_groups_yes,high_groups_no,low_groups_yes,low_groups_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
+Test$H_0[2]<-"High Ratings are not related with the influence of GoodforGroups"
+Test$method[2]<-"chisq-test"
+Test$p_value[2]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with Goodforgroups
 ##############################################################################################################
 #Test the existence of TV
@@ -261,9 +268,38 @@ low_tv_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_tv_yes,high_tv_no,low_tv_yes,low_tv_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
+Test$H_0[3]<-"High Ratings are not related with the existence of TV"
+Test$method[3]<-"chisq-test"
+Test$p_value[3]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with tv
+
+#############################################################################################################
+word<-c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
+plotWordStar(all_review$stars,all_review$text,wordList=word,mfrow = c(4,4))
+#here I use "love" to check whether it can influence the rate
+key_word<-word[8]
+all_stars_with_key<-all_review$stars[which(grepl(key_word,all_review$text))]
+all_stars_without_key<-all_review$stars[-which(grepl(key_word,all_review$text))]
+wilcox.test(all_stars_with_key,all_stars_without_key,alternative="less")
+Test$H_0[4]<-"High Ratings are not related with the appearence of word 'love'"
+Test$method[4]<-"wilcox-test"
+Test$p_value[4]<-wilcox.test(all_stars_with_key,all_stars_without_key,alternative="less")$p.value
+################ how different types of beer related to stars ######################
+AlcoholDrinks <- c("beer","Ale","wine","Rum","rum","Brandy","Gin","gin","Whisky","whisky","Whiskey","whiskey","Texas whiskey","Vodka","Absinthe","Tequila","cocktails","Cocktails")
+plotWordStar(all_review$stars,all_review$text,wordList=AlcoholDrinks,mfrow = c(1,2))
+
+# Cocktails,Absinthe, Vodka, Whiskey, Brandy, Rum, wine are good for restaurant.
+# beer, rum, gin, tequila are fairly normal for business.
+
+
 ######################################################
 #Test the existence of wifi's influence on ratings.
+#First we should transform the names in Wifi
+all_pubs$attributes.WiFi<-gsub("u'free'","'free'",all_pubs$attributes.WiFi)
+all_pubs$attributes.WiFi<-gsub("None","'no'",all_pubs$attributes.WiFi)
+all_pubs$attributes.WiFi<-gsub("u'no'","'no'",all_pubs$attributes.WiFi)
+all_pubs$attributes.WiFi<-gsub("u'paid'","'paid'",all_pubs$attributes.WiFi)
+
 plotWordStar(all_pubs$stars,all_pubs$attributes.WiFi,wordList=c("u'no'","u'free'","'no'","'free'","u'paid'","'paid'","None" ),mfrow = c(2,4))
 low_all<-all_pubs$attributes.WiFi[all_pubs$stars<ave_star]
 high_all<-all_pubs$attributes.WiFi[all_pubs$stars>=ave_star]
@@ -274,11 +310,18 @@ high_wifi_paid<-sum(high_all%in% wifi_word_paid,na.rm = T)
 low_wifi_paid<-sum(low_all%in% wifi_word_paid,na.rm = T)
 high_wifi_free<-sum(high_all%in% wifi_word_free,na.rm = T)
 low_wifi_free<-sum(low_all%in% wifi_word_free,na.rm = T)
+high_all<-all_pubs$attributes.WiFi[all_pubs$stars>ave_star]
+wifi_word_yes<-c("'free'","'paid'")
+wifi_word_no<-c("'no'")
+high_wifi_yes<-sum(high_all%in% wifi_word_yes,na.rm = T)
 high_wifi_no<-sum(high_all%in% wifi_word_no,na.rm = T)
 low_wifi_no<-sum(low_all%in% wifi_word_no,na.rm = T)
 x<-c(high_wifi_paid,high_wifi_free,high_wifi_no,low_wifi_paid,low_wifi_free,low_wifi_no)
 dim(x)<- c(3,2)
 chisq.test(x,correct = F)
+Test$H_0[5]<-"High Ratings are not related with the existence of Wifi"
+Test$method[5]<-"chisq-test"
+Test$p_value[5]<-chisq.test(x,correct = F)$p.value
 #Can't refuse Ho, so Ratings are not related with Wifi
 ##############################################################################################################
 #Test the restaurantdelivery
@@ -292,6 +335,9 @@ low_de_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_de_yes,high_de_no,low_de_yes,low_de_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
+Test$H_0[6]<-"High Ratings are not related with the existence of delivery"
+Test$method[6]<-"chisq-test"
+Test$p_value[6]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with delivery.
 ##############################################################################################################
 #Test the GoodforDancing
@@ -305,6 +351,9 @@ low_dance_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_dance_yes,high_dance_no,low_dance_yes,low_dance_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
+Test$H_0[7]<-"High Ratings are not related with the influence of Goodfordancing"
+Test$method[7]<-"chisq-test"
+Test$p_value[7]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with dancing.
 ############################################################################################################
 low_all<-all_pubs$hours.Friday[all_pubs$stars<ave_star&is.na(all_pubs$hours.Friday)==0]
@@ -312,6 +361,9 @@ high_all<-all_pubs$hours.Friday[all_pubs$stars>ave_star&is.na(all_pubs$hours.Fri
 low_time<-opentime(low_all)
 high_time<-opentime(high_all)
 wilcox.test(low_time,high_time,alternative="less")
+Test$H_0[8]<-"High Ratings are not related with the opentime on Friday"
+Test$method[8]<-"chisq-test"
+Test$p_value[8]<-chisq.test(x,correct = F)$p.value
 #Can't refuse Ho, so Ratings are not related with opentime on Friday.
 
 ######################analysis the most frequent nouns in review and tips ####################################
@@ -335,41 +387,35 @@ WaitressSenti <- c()
 bartenderSenti <- c()
 for (i in business_id) {
    TimeIndex <- grepl("time",review_pubs_WI$text[review_pubs_WI$business_id==i])
-   TimeSentiBus <- mean(sentiment_review_WI[TimeIndex])
+   TimeSentiBus <- mean(sentiment_review_WI[TimeIndex & review_pubs_WI$business_id==i])
    TimeSenti <- c(TimeSenti,TimeSentiBus)
    
    MenuIndex <- grepl("menu",review_pubs_WI$text[review_pubs_WI$business_id==i])
-   MenuSentiBus <- mean(sentiment_review_WI[MenuIndex])
+   MenuSentiBus <- mean(sentiment_review_WI[MenuIndex & review_pubs_WI$business_id==i])
    MenuSenti <- c(MenuSenti,MenuSentiBus)
 
    StaffIndex <- grepl("staff",review_pubs_WI$text[review_pubs_WI$business_id==i])
-   StaffSentiBus <- mean(sentiment_review_WI[StaffIndex])
+   StaffSentiBus <- mean(sentiment_review_WI[StaffIndex & review_pubs_WI$business_id==i])
    StaffSenti <- c(StaffSenti,StaffSentiBus)
   
    WaitressIndex <- grepl("waitress",review_pubs_WI$text[review_pubs_WI$business_id==i])
-   WaitressSentiBus <- mean(sentiment_review_WI[WaitressIndex])
+   WaitressSentiBus <- mean(sentiment_review_WI[WaitressIndex & review_pubs_WI$business_id==i])
    WaitressSenti <- c(WaitressSenti,WaitressSentiBus)
-   for (i in business_id) { 
-      print(i)    
+  
    bartenderIndex <- grepl("bartender",review_pubs_WI$text[review_pubs_WI$business_id==i])
-   bartenderSentiBus <- mean(sentiment_review_WI[bartenderIndex])
+   bartenderSentiBus <- mean(sentiment_review_WI[bartenderIndex & review_pubs_WI$business_id==i])
    bartenderSenti <- c(bartenderSenti,bartenderSentiBus)
 }
 
+for (i in business_id) {
+   print(i)
+   TVIndex <- grepl("tv",review_pubs_WI$text[review_pubs_WI$business_id==i])
+   TVSentiBus <- mean(sentiment_review_WI[TVIndex & review_pubs_WI$business_id==i])
+   TVSenti <- c(TVSenti,TVSentiBus)
+   
+}
 
-
-MenuIndex <- grepl("menu",all_review$text)
-MenuSenti <- sentiment_review[MenuIndex]
-t.test(MenuSenti,rep(0,length(MenuSenti)),alternative = "greater")
-
-
-MenuIndex <- grepl("atmosphere",all_review$text)
-MenuSenti <- sentiment_review[MenuIndex]
-t.test(MenuSenti,rep(0,length(MenuSenti)),alternative = "less")
-
-
-
-
+lm(review_pubs_WI$stars.y~)
 
 
 
