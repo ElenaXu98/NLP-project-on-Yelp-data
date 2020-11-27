@@ -171,7 +171,9 @@ plotWordStar <- function(stars,DTM,wordList,mfrow = c(4,4)) {
          numbers = sum(grepl(wordList[i],dtm_vec))
          starsY[j]  = numbers / sum(stars == k)
       }
-      barplot(starsY,main=wordList[i],xlab="Stars",ylab="Word Freq")
+      names(starsY)<-c(0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0)
+      barplot(starsY,main=wordList[i],xlab="Stars",ylab="proportion")
+
    }  
 }
 
