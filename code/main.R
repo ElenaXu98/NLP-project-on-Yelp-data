@@ -1,3 +1,5 @@
+
+#################### loading packages that we need ##########################
 if (!require("rjson")) {
   install.packages("rjson")
   stopifnot(require("rjson"))
@@ -31,16 +33,15 @@ if (!require("TSA")) {
   stopifnot(require("TSA"))
 }
 if (!require("tidyverse")) {
-  install.packages("tidyverse")
-  stopifnot(require("tidyverse"))
+   install.packages("tidyverse")
+   stopifnot(require("tidyverse"))
 }
 
-business<-jsonlite::stream_in(file("data/business_city.json"))
-review<-jsonlite::stream_in(file("data/review_city.json"))
-tip<-jsonlite::stream_in(file("data/tip_city.json"))
-user<-jsonlite::stream_in(file("data/user_city.json"))
-
-
+####################### data preprocessing ##################################################
+business<-jsonlite::stream_in(file("../data/business_city.json"))
+review<-jsonlite::stream_in(file("../data/review_city.json"))
+tip<-jsonlite::stream_in(file("../data/tip_city.json"))
+user<-jsonlite::stream_in(file("../data/user_city.json"))
 #First, we need to find all the pubs by using the tag:alcohol in the business
 #Then we need to decide what tags to stay.
 all_pubs<-data.frame()
@@ -88,25 +89,136 @@ sq1 <- sqldf("select text, count(text ) count from all_review group by text havi
 all_review<-subset(all_review,!(text%in%sq1$text))
 all_user<-subset(all_user,user_id%in%all_review$user_id)
 all_tip<-subset(all_tip,user_id%in%all_user$user_id)
+#Below is the change to lower letter and some abbreviation in review.
+all_review$text<-tolower(all_review$text)
+all_review$text<-gsub("\'t"," not",all_review$text)
+all_review$text<-gsub("\'d"," would",all_review$text)
+all_review$text<-gsub("he\'s","he is",all_review$text)
+all_review$text<-gsub("she\'s","she is",all_review$text)
+all_review$text<-gsub("i\'m","i am",all_review$text)
+all_review$text<-gsub("it\'s","it is",all_review$text)
+all_review$text<-gsub("\\$","",all_review$text)
 
-#Remove the columns not related to the restaurants
-drops <- c("attributes.HairSpecializesIn","attributes.AcceptsInsurance")
-all_pubs = all_pubs[ , !(names(all_pubs) %in% drops)]
+# same cleaning to tips text
+all_tip$text<-tolower(all_tip$text)
+all_tip$text<-gsub("\'t"," not",all_tip$text)
+all_tip$text<-gsub("\'d"," would",all_tip$text)
+all_tip$text<-gsub("he\'s","he is",all_tip$text)
+all_tip$text<-gsub("she\'s","she is",all_tip$text)
+all_tip$text<-gsub("i\'m","i am",all_tip$text)
+all_tip$text<-gsub("it\'s","it is",all_tip$text)
+all_tip$text<-gsub("\\$","",all_tip$text)
 
+############## join review and pubs data frame and filter to get the reviews of all pubs in Wisconsin
+review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") #314845 entries
+sum(is.na(review_pubs$state))  # no NA's in state 
+review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  #50569 entries
+tip_pubs <- left_join(all_tip,all_pubs,how="left",by="business_id")
+tip_pubs_WI <- tip_pubs[tip_pubs$state == "WI",]  
+
+######### tokenize and remove stop words, then get the most frequent nouns and adjectives in review text
+Noun<-unnest_tokens(tibble(txt=all_review$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%count(word,sort = TRUE)
+TopNoun <- Noun[1:100,] # select top 100 
+#TopNoun <- Noun[Noun$n>quantile(Noun$n,0.99),] # select top 0.01
+summary(Noun)
+quantile(Noun$n,0.99) # frequency = 6715.44
+
+Adj<-unnest_tokens(tibble(txt=all_review$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Adjective")) %>%count(word,sort = TRUE)
+TopAdj <- Adj[1:100,]  # select top 100 
+summary(Adj)
+quantile(Adj$n,0.99) # frequency = 6289
+Adj[100,'n']
+
+######### tokenize and remove stop words, then get the most frequent nouns and adjectives in tip text
+Noun_tip<-unnest_tokens(tibble(txt=all_tip$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%count(word,sort = TRUE)
+TopNoun_tip <- Noun_tip[1:100,] # select top 100 
+summary(Noun_tip)
+quantile(Noun_tip$n,0.99) # frequency = 279.29
+
+Adj_tip<-unnest_tokens(tibble(txt=all_tip$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Adjective")) %>%count(word,sort = TRUE)
+TopAdj_tip <- Adj_tip[1:100,]
+summary(Adj_tip)
+quantile(Adj_tip$n,0.99) 
+
+########### sentiment analysis of review and tip text
+sentiment_review <- c()
+for (i in 1:dim(all_review)[1]) {
+   tidy_review <- unnest_tokens(tibble(txt=all_review$text[i]),word, txt)%>%
+                  anti_join(stop_words) %>% 
+                  inner_join(get_sentiments("bing"))%>%
+                  count(word,sentiment)%>%
+                  spread(sentiment,n,fill = 0)
+   sentiment <- sum(tidy_review$positive)-sum(tidy_review$negative)
+   sentiment_review <- c(sentiment_review,sentiment)
+  # print(i)
+}
+
+write.csv(sentiment_review,file = "../output/sentiment_review.csv")
+
+#average_length_tip <- dim(unnest_tokens(tibble(txt=all_tip$text),word, txt))[1]/dim(all_tip)[1]
+sentiment_tip <- c()
+for (i in 1:dim(all_tip)[1]) {
+   tidy_tip <- unnest_tokens(tibble(txt=all_tip$text[i]),word, txt)%>%
+      anti_join(stop_words)%>% 
+      inner_join(get_sentiments("bing"))%>%
+      count(word,sentiment) %>%
+      spread(sentiment,n,fill = 0)
+   sentiment <- sum(tidy_tip$positive)-sum(tidy_tip$negative)
+   sentiment_tip <- c(sentiment_tip,sentiment)
+  # print(i)
+}
+
+write.csv(sentiment_tip,file = "../output/sentiment_tip.csv")
+
+### sentiment analysis of reviews of pubs in Wisconsin
+sentiment_review_WI <- c()
+for (i in 1:dim(review_pubs_WI)[1]) {
+   tidy_review <- unnest_tokens(tibble(txt=review_pubs_WI$text[i]),word, txt)%>%
+      anti_join(stop_words) %>% 
+      inner_join(get_sentiments("bing"))%>%
+      count(word,sentiment)%>%
+      spread(sentiment,n,fill = 0)
+   sentiment <- sum(tidy_review$positive)-sum(tidy_review$negative)
+   sentiment_review_WI <- c(sentiment_review_WI,sentiment)
+   # print(i)
+}
+
+
+write.csv(sentiment_review_WI,file = "../output/sentiment_review_WI.csv")
+
+### sentiment analysis of tips of pubs in Wisconsin
+sentiment_tip_WI <- c()
+for (i in 1:dim(tip_pubs_WI)[1]) {
+   tidy_tip <- unnest_tokens(tibble(txt=tip_pubs_WI$text[i]),word, txt)%>%
+      anti_join(stop_words)%>% 
+      inner_join(get_sentiments("bing"))%>%
+      count(word,sentiment) %>%
+      spread(sentiment,n,fill = 0)
+   sentiment <- sum(tidy_tip$positive)-sum(tidy_tip$negative)
+   sentiment_tip_WI <- c(sentiment_tip_WI,sentiment)
+    print(i)
+}
+
+write.csv(sentiment_tip_WI,file = "../output/sentiment_tip_WI.csv")
+
+
+########################### EDA ################################
 #Below is the function for plots in all_pubs.
 plotWordStar <- function(stars,DTM,wordList,mfrow = c(4,4)) {
-  par(mfrow = mfrow)
-  
-  for (i in 1 :length(wordList)){
-    starsY = rep(0,5)
-    for(j in 2:10) {
-      k=j/2
-      dtm_vec = DTM[which(stars == k)]
-      numbers = sum(grepl(wordList[i],dtm_vec))
-      starsY[j]  = numbers / sum(stars == k)
-    }
-    barplot(starsY,main=wordList[i],xlab="Stars",ylab="Word Freq")
-  }  
+   par(mfrow = mfrow)
+   
+   for (i in 1 :length(wordList)){
+      starsY = rep(0,5)
+      for(j in 2:10) {
+         k=j/2
+         dtm_vec = DTM[which(stars == k)]
+         numbers = sum(grepl(wordList[i],dtm_vec))
+         starsY[j]  = numbers / sum(stars == k)
+      }
+
+      names(starsY)<-c(0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0)
+      barplot(starsY,main=wordList[i],xlab="Stars",ylab="proportion")
+   }  
 }
 
 opentime <- function(time){
@@ -124,14 +236,14 @@ opentime <- function(time){
   return(opentime)
 }
 
+Test<-data.frame(No=1:8,H_0=rep(NA,8),method=rep(NA,8),p_value=rep(NA,8))
 ave_star<-quantile(all_pubs$stars)[3]
 
 ##############################################################################################################
-#Test the influence of takeout
-
+###Test the influence of takeout
 plotWordStar(all_pubs$stars,all_pubs$attributes.RestaurantsTakeOut,wordList=c("True","False"),mfrow = c(1,2))
 low_all<-all_pubs$attributes.RestaurantsTakeOut[all_pubs$stars<ave_star]
-high_all<-all_pubs$attributes.RestaurantsTakeOut[all_pubs$stars>ave_star]
+high_all<-all_pubs$attributes.RestaurantsTakeOut[all_pubs$stars>=ave_star]
 high_takeout_yes<-sum(high_all=="True",na.rm = T)
 high_takeout_no<-sum(high_all=="False",na.rm = T)
 low_takeout_yes<-sum(low_all=="True",na.rm = T)
@@ -139,14 +251,16 @@ low_takeout_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_takeout_yes,high_takeout_no,low_takeout_yes,low_takeout_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
-
+Test$H_0[1]<-"High Ratings are not related with the existence of takeout"
+Test$method[1]<-"chisq-test"
+Test$p_value[1]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with takout
 ##############################################################################################################
 
 #Test the influence of Good for Groups
 plotWordStar(all_pubs$stars,all_pubs$attributes.RestaurantsGoodForGroups,wordList=c("True","False"),mfrow = c(1,2))
 low_all<-all_pubs$attributes.RestaurantsGoodForGroups[all_pubs$stars<ave_star]
-high_all<-all_pubs$attributes.RestaurantsGoodForGroups[all_pubs$stars>ave_star]
+high_all<-all_pubs$attributes.RestaurantsGoodForGroups[all_pubs$stars>=ave_star]
 high_groups_yes<-sum(high_all=="True",na.rm = T)
 high_groups_no<-sum(high_all=="False",na.rm = T)
 low_groups_yes<-sum(low_all=="True",na.rm = T)
@@ -154,14 +268,16 @@ low_groups_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_groups_yes,high_groups_no,low_groups_yes,low_groups_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
-
+Test$H_0[2]<-"High Ratings are not related with the influence of GoodforGroups"
+Test$method[2]<-"chisq-test"
+Test$p_value[2]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with Goodforgroups
 ##############################################################################################################
 #Test the existence of TV
 
 plotWordStar(all_pubs$stars,all_pubs$attributes.HasTV,wordList=c("True","False"),mfrow = c(1,2))
 low_all<-all_pubs$attributes.HasTV[all_pubs$stars<ave_star]
-high_all<-all_pubs$attributes.HasTV[all_pubs$stars>ave_star]
+high_all<-all_pubs$attributes.HasTV[all_pubs$stars>=ave_star]
 high_tv_yes<-sum(high_all=="True",na.rm = T)
 high_tv_no<-sum(high_all=="False",na.rm = T)
 low_tv_yes<-sum(low_all=="True",na.rm = T)
@@ -169,8 +285,170 @@ low_tv_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_tv_yes,high_tv_no,low_tv_yes,low_tv_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
-
+Test$H_0[3]<-"High Ratings are not related with the existence of TV"
+Test$method[3]<-"chisq-test"
+Test$p_value[3]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with tv
+
+#############################################################################################################
+word<-c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
+plotWordStar(all_review$stars,all_review$text,wordList=word,mfrow = c(4,4))
+#here I use "love" to check whether it can influence the rate
+key_word<-word[8]
+all_stars_with_key<-all_review$stars[which(grepl(key_word,all_review$text))]
+all_stars_without_key<-all_review$stars[-which(grepl(key_word,all_review$text))]
+wilcox.test(all_stars_with_key,all_stars_without_key,alternative="less")
+Test$H_0[4]<-"High Ratings are not related with the appearence of word 'love'"
+Test$method[4]<-"wilcox-test"
+Test$p_value[4]<-wilcox.test(all_stars_with_key,all_stars_without_key,alternative="less")$p.value
+################ how different types of beer related to stars ######################
+AlcoholDrinks <- c("beer","Ale","wine","Rum","rum","Brandy","Gin","gin","Whisky","whisky","Whiskey","whiskey","Texas whiskey","Vodka","Absinthe","Tequila","cocktails","Cocktails")
+plotWordStar(all_review$stars,all_review$text,wordList=AlcoholDrinks,mfrow = c(1,2))
+
+# Cocktails,Absinthe, Vodka, Whiskey, Brandy, Rum, wine are good for restaurant.
+# beer, rum, gin, tequila are fairly normal for business.
+
+
+######################################################
+#Test the existence of wifi's influence on ratings.
+#First we should transform the names in Wifi
+all_pubs$attributes.WiFi<-gsub("u'free'","'free'",all_pubs$attributes.WiFi)
+all_pubs$attributes.WiFi<-gsub("None","'no'",all_pubs$attributes.WiFi)
+all_pubs$attributes.WiFi<-gsub("u'no'","'no'",all_pubs$attributes.WiFi)
+all_pubs$attributes.WiFi<-gsub("u'paid'","'paid'",all_pubs$attributes.WiFi)
+
+plotWordStar(all_pubs$stars,all_pubs$attributes.WiFi,wordList=c("u'no'","u'free'","'no'","'free'","u'paid'","'paid'","None" ),mfrow = c(2,4))
+low_all<-all_pubs$attributes.WiFi[all_pubs$stars<ave_star]
+high_all<-all_pubs$attributes.WiFi[all_pubs$stars>=ave_star]
+wifi_word_paid<-c("u'paid'","'paid'")
+wifi_word_free<-c("u'free'","'free'")
+wifi_word_no<-c("u'no'","'no'","None")
+high_wifi_paid<-sum(high_all%in% wifi_word_paid,na.rm = T)
+low_wifi_paid<-sum(low_all%in% wifi_word_paid,na.rm = T)
+high_wifi_free<-sum(high_all%in% wifi_word_free,na.rm = T)
+low_wifi_free<-sum(low_all%in% wifi_word_free,na.rm = T)
+high_all<-all_pubs$attributes.WiFi[all_pubs$stars>ave_star]
+wifi_word_yes<-c("'free'","'paid'")
+wifi_word_no<-c("'no'")
+high_wifi_yes<-sum(high_all%in% wifi_word_yes,na.rm = T)
+high_wifi_no<-sum(high_all%in% wifi_word_no,na.rm = T)
+low_wifi_no<-sum(low_all%in% wifi_word_no,na.rm = T)
+x<-c(high_wifi_paid,high_wifi_free,high_wifi_no,low_wifi_paid,low_wifi_free,low_wifi_no)
+dim(x)<- c(3,2)
+chisq.test(x,correct = F)
+Test$H_0[5]<-"High Ratings are not related with the existence of Wifi"
+Test$method[5]<-"chisq-test"
+Test$p_value[5]<-chisq.test(x,correct = F)$p.value
+#Can't refuse Ho, so Ratings are not related with Wifi
+
+##############################################################################################################
+#Test the restaurantdelivery
+
+plotWordStar(all_pubs$stars,all_pubs$attributes.RestaurantsDelivery,wordList=c("True","False"),mfrow = c(1,2))
+low_all<-all_pubs$attributes.RestaurantsDelivery[all_pubs$stars<ave_star]
+high_all<-all_pubs$attributes.RestaurantsDelivery[all_pubs$stars>ave_star]
+high_de_yes<-sum(high_all=="True",na.rm = T)
+high_de_no<-sum(high_all=="False",na.rm = T)
+low_de_yes<-sum(low_all=="True",na.rm = T)
+low_de_no<-sum(low_all=="False",na.rm = T)
+x<-c(high_de_yes,high_de_no,low_de_yes,low_de_no)
+dim(x)<- c(2,2)
+chisq.test(x,correct = F)
+Test$H_0[6]<-"High Ratings are not related with the existence of delivery"
+Test$method[6]<-"chisq-test"
+Test$p_value[6]<-chisq.test(x,correct = F)$p.value
+#Refuse Ho, so Ratings are related with delivery.
+
+##############################################################################################################
+
+#Test the GoodforDancing
+plotWordStar(all_pubs$stars,all_pubs$attributes.GoodForDancing,wordList=c("True","False"),mfrow = c(1,2))
+low_all<-all_pubs$attributes.GoodForDancing[all_pubs$stars<ave_star]
+high_all<-all_pubs$attributes.GoodForDancing[all_pubs$stars>ave_star]
+high_dance_yes<-sum(high_all=="True",na.rm = T)
+high_dance_no<-sum(high_all=="False",na.rm = T)
+low_dance_yes<-sum(low_all=="True",na.rm = T)
+low_dance_no<-sum(low_all=="False",na.rm = T)
+x<-c(high_dance_yes,high_dance_no,low_dance_yes,low_dance_no)
+dim(x)<- c(2,2)
+chisq.test(x,correct = F)
+Test$H_0[7]<-"High Ratings are not related with the influence of Goodfordancing"
+Test$method[7]<-"chisq-test"
+Test$p_value[7]<-chisq.test(x,correct = F)$p.value
+#Refuse Ho, so Ratings are related with dancing.
+
+############################################################################################################
+low_all<-all_pubs$hours.Friday[all_pubs$stars<ave_star&is.na(all_pubs$hours.Friday)==0]
+high_all<-all_pubs$hours.Friday[all_pubs$stars>ave_star&is.na(all_pubs$hours.Friday)==0]
+low_time<-opentime(low_all)
+high_time<-opentime(high_all)
+wilcox.test(low_time,high_time,alternative="less")
+Test$H_0[8]<-"High Ratings are not related with the opentime on Friday"
+Test$method[8]<-"chisq-test"
+Test$p_value[8]<-chisq.test(x,correct = F)$p.value
+#Can't refuse Ho, so Ratings are not related with opentime on Friday.
+
+######################analysis the most frequent nouns in review and tips ####################################
+NounCandidate <- inner_join(TopNoun,TopNoun_tip,by="word")
+AdjCandidate <- inner_join(TopAdj,TopAdj_tip,by="word")
+topics <- c("time","menu","beer","staff","wait","atmosphere","waitress","hour","day","wine","location","home","bartender","family","patio","seating","free","parking","mexican","game","quick","friday","reservation","fast","tap","cheap")
+topics_index <- c()
+for (i in topics) {
+   topics_index <- c(topics_index,which(NounCandidate==i))
+}
+topic <- cbind(topics,topics_index)
+colnames(topic) <- c("topics","frequency_rank")
+write.csv(topic,file = "../output/topic_NLP.csv")
+
+
+business_id <- unique(review_pubs_WI$business_id)
+TimeSenti <- c()
+MenuSenti <- c()
+StaffSenti <- c()
+WaitressSenti <- c()
+bartenderSenti <- c()
+for (i in business_id) {
+   TimeIndex <- grepl("time",review_pubs_WI$text[review_pubs_WI$business_id==i])
+   TimeSentiBus <- mean(sentiment_review_WI[TimeIndex & review_pubs_WI$business_id==i])
+   TimeSenti <- c(TimeSenti,TimeSentiBus)
+   
+   MenuIndex <- grepl("menu",review_pubs_WI$text[review_pubs_WI$business_id==i])
+   MenuSentiBus <- mean(sentiment_review_WI[MenuIndex & review_pubs_WI$business_id==i])
+   MenuSenti <- c(MenuSenti,MenuSentiBus)
+
+   StaffIndex <- grepl("staff",review_pubs_WI$text[review_pubs_WI$business_id==i])
+   StaffSentiBus <- mean(sentiment_review_WI[StaffIndex & review_pubs_WI$business_id==i])
+   StaffSenti <- c(StaffSenti,StaffSentiBus)
+  
+   WaitressIndex <- grepl("waitress",review_pubs_WI$text[review_pubs_WI$business_id==i])
+   WaitressSentiBus <- mean(sentiment_review_WI[WaitressIndex & review_pubs_WI$business_id==i])
+   WaitressSenti <- c(WaitressSenti,WaitressSentiBus)
+  
+   bartenderIndex <- grepl("bartender",review_pubs_WI$text[review_pubs_WI$business_id==i])
+   bartenderSentiBus <- mean(sentiment_review_WI[bartenderIndex & review_pubs_WI$business_id==i])
+   bartenderSenti <- c(bartenderSenti,bartenderSentiBus)
+}
+
+for (i in business_id) {
+   print(i)
+   TVIndex <- grepl("tv",review_pubs_WI$text[review_pubs_WI$business_id==i])
+   TVSentiBus <- mean(sentiment_review_WI[TVIndex & review_pubs_WI$business_id==i])
+   TVSenti <- c(TVSenti,TVSentiBus)
+   
+}
+
+lm(review_pubs_WI$stars.y~)
+
+
+
+
+
+
+
+
+
+
+
 #############################################################################################################
 word<-c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
 plotWordStar(all_review$stars,all_review$text,wordList=word,mfrow = c(4,4))
@@ -188,60 +466,8 @@ plotWordStar(all_review$stars,all_review$text,wordList=AlcoholDrinks,mfrow = c(1
 # beer, rum, gin, tequila are fairly normal for business.
 
 
-######################################################
-#Test the existence of wifi's influence on ratings.
-plotWordStar(all_pubs$stars,all_pubs$attributes.WiFi,wordList=c("u'no'","u'free'","'no'","'free'","u'paid'","'paid'","None" ),mfrow = c(2,4))
-low_all<-all_pubs$attributes.WiFi[all_pubs$stars<ave_star]
-high_all<-all_pubs$attributes.WiFi[all_pubs$stars>ave_star]
-wifi_word_yes<-c("u'free'","'free'","u'paid'","'paid'")
-wifi_word_no<-c("u'no'","'no'","None")
-high_wifi_yes<-sum(high_all%in% wifi_word_yes,na.rm = T)
-high_wifi_no<-sum(high_all%in% wifi_word_no,na.rm = T)
-low_wifi_yes<-sum(low_all%in% wifi_word_yes,na.rm = T)
-low_wifi_no<-sum(low_all%in% wifi_word_no,na.rm = T)
-x<-c(high_wifi_yes,high_wifi_no,low_wifi_yes,low_wifi_no)
-dim(x)<- c(2,2)
-chisq.test(x,correct = F)
 
-#Can't refuse Ho, so Ratings are not related with Wifi
 
-##############################################################################################################
-#Test the restaurantdelivery
-
-plotWordStar(all_pubs$stars,all_pubs$attributes.RestaurantsDelivery,wordList=c("True","False"),mfrow = c(1,2))
-low_all<-all_pubs$attributes.RestaurantsDelivery[all_pubs$stars<ave_star]
-high_all<-all_pubs$attributes.RestaurantsDelivery[all_pubs$stars>ave_star]
-high_de_yes<-sum(high_all=="True",na.rm = T)
-high_de_no<-sum(high_all=="False",na.rm = T)
-low_de_yes<-sum(low_all=="True",na.rm = T)
-low_de_no<-sum(low_all=="False",na.rm = T)
-x<-c(high_de_yes,high_de_no,low_de_yes,low_de_no)
-dim(x)<- c(2,2)
-chisq.test(x,correct = F)
-#Refuse Ho, so Ratings are related with delivery.
-
-##############################################################################################################
-
-#Test the GoodforDancing
-plotWordStar(all_pubs$stars,all_pubs$attributes.GoodForDancing,wordList=c("True","False"),mfrow = c(1,2))
-low_all<-all_pubs$attributes.GoodForDancing[all_pubs$stars<ave_star]
-high_all<-all_pubs$attributes.GoodForDancing[all_pubs$stars>ave_star]
-high_dance_yes<-sum(high_all=="True",na.rm = T)
-high_dance_no<-sum(high_all=="False",na.rm = T)
-low_dance_yes<-sum(low_all=="True",na.rm = T)
-low_dance_no<-sum(low_all=="False",na.rm = T)
-x<-c(high_dance_yes,high_dance_no,low_dance_yes,low_dance_no)
-dim(x)<- c(2,2)
-chisq.test(x,correct = F)
-#Refuse Ho, so Ratings are related with dancing.
-
-############################################################################################################
-low_all<-all_pubs$hours.Friday[all_pubs$stars<ave_star&is.na(all_pubs$hours.Friday)==0]
-high_all<-all_pubs$hours.Friday[all_pubs$stars>ave_star&is.na(all_pubs$hours.Friday)==0]
-low_time<-opentime(low_all)
-high_time<-opentime(high_all)
-wilcox.test(low_time,high_time,alternative="less")
-#Can't refuse Ho, so Ratings are not related with opentime on Friday.
 
 ############################# some other terms that may affect rating ########################################
 terms <- c("atmosphere","service","kids","family","clean")
@@ -267,14 +493,54 @@ plotWordStar(all_review$stars[all_review$business_id==all_pubs$business_id & all
 
 
 
+####################################### NLP analysis of review text ########################################
+
+##### choose pubs and choose WI state 
+###### get the frequency of noun
+review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") #314845 entries
+sum(is.na(review_pubs$state)) # 267410 entries
+review_pubs <- review_pubs[is.na(review_pubs$state)==FALSE,] #47435 entries
+review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  #8931 entries
+txt <- review_pubs_WI[,'text']
+
+Noun<-unnest_tokens(tibble(txt=all_review$text),word, txt) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%pull(word)
+frequency_of_noun <- table(Noun)
+sort(frequency_of_noun,decreasing = TRUE)[1:20]
+
+###### get the frequency of abjectives and adverb 
+Adj<-unnest_tokens(tibble(txt=all_review$text),word, txt) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Adjective")) %>%pull(word)
+frequency_of_adj <- table(Adj)
+sort(frequency_of_adj,decreasing = TRUE)[1:20]
+
+
+##### words about alcohol drinks 
+AlcoholDrinks <- c("beer","Ale","wine","Rum","rum","Brandy","Gin","gin","Whisky","whisky","Whiskey","whiskey","Texas whiskey","Vodka","Absinthe","Tequila","cocktails","Cocktails")
+AlcoholBrands <- c("Smirnoff","Bacardi","Jack Daniel's","Crown Royal","Absolut","crown","bacardi","smirnoff")
+Cocktails <- c("martini","Martini","Long Island","pink lady","champagne","Manhattan","coquito")
+
+Alcohol <- matrix(0,nrow=33,ncol = 2)
+colnames(Alcohol) <- c("noun","frequency")
+Alcohol[,1] <- c(AlcoholDrinks,AlcoholBrands,Cocktails)
+for (rownames(frequency_of_noun)%in%Alcohol[,1]) {
+   
+}
+inner_join(Alcohol,freq,how="inner",on="noun")
 
 
 
+##################### sentiment analysis ##################################
+test_review <- all_review[1:1000,]
+if (packageVersion("devtools") < 1.6) {
+   install.packages("devtools")
+}
+text <- test_review[,'text']
 
+text %>%
+   inner_join(get_sentiments("bing")) %>%
+   filter(!is.na(sentiments)) %>%
+   count(sentiments,sort=TRUE)
 
-
-
-
+lexicon <- c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
 
 
 
