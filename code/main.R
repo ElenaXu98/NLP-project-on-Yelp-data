@@ -190,6 +190,7 @@ opentime <- function(time){
    return(opentime)
 }
 
+Test<-data.frame(No=1:8,H_0=rep(NA,8),method=rep(NA,8),p_value=rep(NA,8))
 ave_star<-quantile(all_pubs$stars)[3]
 ##############################################################################################################
 ###Test the influence of takeout
@@ -203,6 +204,9 @@ low_takeout_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_takeout_yes,high_takeout_no,low_takeout_yes,low_takeout_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
+Test$H_0[1]<-"High Ratings are not related with the existence of takeout"
+Test$method[1]<-"chisq-test"
+Test$p_value[1]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with takout
 ##############################################################################################################
 #Test the influence of GoodforGroups
@@ -216,6 +220,9 @@ low_groups_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_groups_yes,high_groups_no,low_groups_yes,low_groups_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
+Test$H_0[2]<-"High Ratings are not related with the influence of GoodforGroups"
+Test$method[2]<-"chisq-test"
+Test$p_value[2]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with Goodforgroups
 ##############################################################################################################
 #Test the existence of TV
@@ -229,6 +236,9 @@ low_tv_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_tv_yes,high_tv_no,low_tv_yes,low_tv_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
+Test$H_0[3]<-"High Ratings are not related with the existence of TV"
+Test$method[3]<-"chisq-test"
+Test$p_value[3]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with tv
 #############################################################################################################
 word<-c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
@@ -238,7 +248,9 @@ key_word<-word[8]
 all_stars_with_key<-all_review$stars[which(grepl(key_word,all_review$text))]
 all_stars_without_key<-all_review$stars[-which(grepl(key_word,all_review$text))]
 wilcox.test(all_stars_with_key,all_stars_without_key,alternative="less")
-
+Test$H_0[4]<-"High Ratings are not related with the appearence of word 'love'"
+Test$method[4]<-"wilcox-test"
+Test$p_value[4]<-wilcox.test(all_stars_with_key,all_stars_without_key,alternative="less")$p.value
 ################ how different types of beer related to stars ######################
 AlcoholDrinks <- c("beer","Ale","wine","Rum","rum","Brandy","Gin","gin","Whisky","whisky","Whiskey","whiskey","Texas whiskey","Vodka","Absinthe","Tequila","cocktails","Cocktails")
 plotWordStar(all_review$stars,all_review$text,wordList=AlcoholDrinks,mfrow = c(1,2))
@@ -258,8 +270,8 @@ all_pubs$attributes.WiFi<-gsub("u'paid'","'paid'",all_pubs$attributes.WiFi)
 plotWordStar(all_pubs$stars,all_pubs$attributes.WiFi,wordList=c("u'no'","u'free'","'no'","'free'","u'paid'","'paid'","None" ),mfrow = c(2,4))
 low_all<-all_pubs$attributes.WiFi[all_pubs$stars<ave_star]
 high_all<-all_pubs$attributes.WiFi[all_pubs$stars>ave_star]
-wifi_word_yes<-c("u'free'","'free'","u'paid'","'paid'")
-wifi_word_no<-c("u'no'","'no'","None")
+wifi_word_yes<-c("'free'","'paid'")
+wifi_word_no<-c("'no'")
 high_wifi_yes<-sum(high_all%in% wifi_word_yes,na.rm = T)
 high_wifi_no<-sum(high_all%in% wifi_word_no,na.rm = T)
 low_wifi_yes<-sum(low_all%in% wifi_word_yes,na.rm = T)
@@ -267,6 +279,9 @@ low_wifi_no<-sum(low_all%in% wifi_word_no,na.rm = T)
 x<-c(high_wifi_yes,high_wifi_no,low_wifi_yes,low_wifi_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
+Test$H_0[5]<-"High Ratings are not related with the existence of Wifi"
+Test$method[5]<-"chisq-test"
+Test$p_value[5]<-chisq.test(x,correct = F)$p.value
 #Can't refuse Ho, so Ratings are not related with Wifi
 ##############################################################################################################
 #Test the restaurantdelivery
@@ -280,6 +295,9 @@ low_de_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_de_yes,high_de_no,low_de_yes,low_de_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
+Test$H_0[6]<-"High Ratings are not related with the existence of delivery"
+Test$method[6]<-"chisq-test"
+Test$p_value[6]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with delivery.
 ##############################################################################################################
 #Test the GoodforDancing
@@ -293,6 +311,9 @@ low_dance_no<-sum(low_all=="False",na.rm = T)
 x<-c(high_dance_yes,high_dance_no,low_dance_yes,low_dance_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
+Test$H_0[7]<-"High Ratings are not related with the influence of Goodfordancing"
+Test$method[7]<-"chisq-test"
+Test$p_value[7]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with dancing.
 ############################################################################################################
 low_all<-all_pubs$hours.Friday[all_pubs$stars<ave_star&is.na(all_pubs$hours.Friday)==0]
@@ -300,6 +321,9 @@ high_all<-all_pubs$hours.Friday[all_pubs$stars>ave_star&is.na(all_pubs$hours.Fri
 low_time<-opentime(low_all)
 high_time<-opentime(high_all)
 wilcox.test(low_time,high_time,alternative="less")
+Test$H_0[8]<-"High Ratings are not related with the opentime on Friday"
+Test$method[8]<-"chisq-test"
+Test$p_value[8]<-chisq.test(x,correct = F)$p.value
 #Can't refuse Ho, so Ratings are not related with opentime on Friday.
 
 ############################# some other terms that may affect rating ########################################
