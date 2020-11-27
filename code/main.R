@@ -1,3 +1,5 @@
+
+#################### loading packages that we need ##########################
 if (!require("rjson")) {
   install.packages("rjson")
   stopifnot(require("rjson"))
@@ -34,10 +36,12 @@ if (!require("tidyverse")) {
    install.packages("tidyverse")
    stopifnot(require("tidyverse"))
 }
-business<-jsonlite::stream_in(file("data/business_city.json"))
-review<-jsonlite::stream_in(file("data/review_city.json"))
-tip<-jsonlite::stream_in(file("data/tip_city.json"))
-user<-jsonlite::stream_in(file("data/user_city.json"))
+
+####################### data preprocessing ##################################################
+business<-jsonlite::stream_in(file("../data/business_city.json"))
+review<-jsonlite::stream_in(file("../data/review_city.json"))
+tip<-jsonlite::stream_in(file("../data/tip_city.json"))
+user<-jsonlite::stream_in(file("../data/user_city.json"))
 #First, we need to find all the pubs by using the tag:alcohol in the business
 #Then we need to decide what tags to stay.
 all_pubs<-data.frame()
@@ -80,7 +84,49 @@ all_review$text<-gsub("he\'s","he is",all_review$text)
 all_review$text<-gsub("she\'s","she is",all_review$text)
 all_review$text<-gsub("i\'m","i am",all_review$text)
 all_review$text<-gsub("it\'s","it is",all_review$text)
+all_review$text<-gsub("\\$","",all_review$text)
 
+# same cleaning to tips text
+all_tip$text<-tolower(all_tip$text)
+all_tip$text<-gsub("\'t"," not",all_tip$text)
+all_tip$text<-gsub("\'d"," would",all_tip$text)
+all_tip$text<-gsub("he\'s","he is",all_tip$text)
+all_tip$text<-gsub("she\'s","she is",all_tip$text)
+all_tip$text<-gsub("i\'m","i am",all_tip$text)
+all_tip$text<-gsub("it\'s","it is",all_tip$text)
+all_tip$text<-gsub("\\$","",all_tip$text)
+
+#############3 join review and pubs data frame and filter to get the reviews of all pubs in Wisconsin
+review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") #314845 entries
+sum(is.na(review_pubs$state))  # no NA's in state 
+review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  #50569 entries
+txt <- review_pubs_WI[,'text']
+
+# tokenize and remove stop words, then get the most frequent nouns and adjectives
+Noun<-unnest_tokens(tibble(txt=all_review$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%pull(word)
+frequency_of_noun <- table(Noun)
+sort(frequency_of_noun,decreasing = TRUE)[1:20]
+
+###### get the frequency of abjectives and adverb 
+Adj<-unnest_tokens(tibble(txt=all_review$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Adjective")) %>%pull(word)
+frequency_of_adj <- table(Adj)
+sort(frequency_of_adj,decreasing = TRUE)[1:20]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######################## EDA #########################
 #Below is the function for plots in all_pubs.
 plotWordStar <- function(stars,DTM,wordList,mfrow = c(4,4)) {
    par(mfrow = mfrow)
@@ -282,7 +328,19 @@ freq[,2] <- as.vector(frequency_of_noun)
 colnames(freq) <- c("noun","frequency")
 
 
+##################### sentiment analysis ##################################
+test_review <- all_review[1:1000,]
+if (packageVersion("devtools") < 1.6) {
+   install.packages("devtools")
+}
+text <- test_review[,'text']
 
+text %>%
+   inner_join(get_sentiments("bing")) %>%
+   filter(!is.na(sentiments)) %>%
+   count(sentiments,sort=TRUE)
+
+lexicon <- c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
 
 
 
