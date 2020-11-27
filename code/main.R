@@ -195,7 +195,7 @@ ave_star<-quantile(all_pubs$stars)[3]
 ###Test the influence of takeout
 plotWordStar(all_pubs$stars,all_pubs$attributes.RestaurantsTakeOut,wordList=c("True","False"),mfrow = c(1,2))
 low_all<-all_pubs$attributes.RestaurantsTakeOut[all_pubs$stars<ave_star]
-high_all<-all_pubs$attributes.RestaurantsTakeOut[all_pubs$stars>ave_star]
+high_all<-all_pubs$attributes.RestaurantsTakeOut[all_pubs$stars>=ave_star]
 high_takeout_yes<-sum(high_all=="True",na.rm = T)
 high_takeout_no<-sum(high_all=="False",na.rm = T)
 low_takeout_yes<-sum(low_all=="True",na.rm = T)
@@ -208,7 +208,7 @@ chisq.test(x,correct = F)
 #Test the influence of GoodforGroups
 plotWordStar(all_pubs$stars,all_pubs$attributes.RestaurantsGoodForGroups,wordList=c("True","False"),mfrow = c(1,2))
 low_all<-all_pubs$attributes.RestaurantsGoodForGroups[all_pubs$stars<ave_star]
-high_all<-all_pubs$attributes.RestaurantsGoodForGroups[all_pubs$stars>ave_star]
+high_all<-all_pubs$attributes.RestaurantsGoodForGroups[all_pubs$stars>=ave_star]
 high_groups_yes<-sum(high_all=="True",na.rm = T)
 high_groups_no<-sum(high_all=="False",na.rm = T)
 low_groups_yes<-sum(low_all=="True",na.rm = T)
@@ -221,7 +221,7 @@ chisq.test(x,correct = F)
 #Test the existence of TV
 plotWordStar(all_pubs$stars,all_pubs$attributes.HasTV,wordList=c("True","False"),mfrow = c(1,2))
 low_all<-all_pubs$attributes.HasTV[all_pubs$stars<ave_star]
-high_all<-all_pubs$attributes.HasTV[all_pubs$stars>ave_star]
+high_all<-all_pubs$attributes.HasTV[all_pubs$stars>=ave_star]
 high_tv_yes<-sum(high_all=="True",na.rm = T)
 high_tv_no<-sum(high_all=="False",na.rm = T)
 low_tv_yes<-sum(low_all=="True",na.rm = T)
@@ -230,36 +230,22 @@ x<-c(high_tv_yes,high_tv_no,low_tv_yes,low_tv_no)
 dim(x)<- c(2,2)
 chisq.test(x,correct = F)
 #Refuse Ho, so Ratings are related with tv
-#############################################################################################################
-word<-c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
-plotWordStar(all_review$stars,all_review$text,wordList=word,mfrow = c(4,4))
-#here I use "love" to check whether it can influence the rate
-key_word<-word[8]
-all_stars_with_key<-all_review$stars[which(grepl(key_word,all_review$text))]
-all_stars_without_key<-all_review$stars[-which(grepl(key_word,all_review$text))]
-wilcox.test(all_stars_with_key,all_stars_without_key,alternative="less")
-
-################ how different types of beer related to stars ######################
-AlcoholDrinks <- c("beer","Ale","wine","Rum","rum","Brandy","Gin","gin","Whisky","whisky","Whiskey","whiskey","Texas whiskey","Vodka","Absinthe","Tequila","cocktails","Cocktails")
-plotWordStar(all_review$stars,all_review$text,wordList=AlcoholDrinks,mfrow = c(1,2))
-
-# Cocktails,Absinthe, Vodka, Whiskey, Brandy, Rum, wine are good for restaurant.
-# beer, rum, gin, tequila are fairly normal for business.
-
-
 ######################################################
 #Test the existence of wifi's influence on ratings.
 plotWordStar(all_pubs$stars,all_pubs$attributes.WiFi,wordList=c("u'no'","u'free'","'no'","'free'","u'paid'","'paid'","None" ),mfrow = c(2,4))
 low_all<-all_pubs$attributes.WiFi[all_pubs$stars<ave_star]
-high_all<-all_pubs$attributes.WiFi[all_pubs$stars>ave_star]
-wifi_word_yes<-c("u'free'","'free'","u'paid'","'paid'")
+high_all<-all_pubs$attributes.WiFi[all_pubs$stars>=ave_star]
+wifi_word_paid<-c("u'paid'","'paid'")
+wifi_word_free<-c("u'free'","'free'")
 wifi_word_no<-c("u'no'","'no'","None")
-high_wifi_yes<-sum(high_all%in% wifi_word_yes,na.rm = T)
+high_wifi_paid<-sum(high_all%in% wifi_word_paid,na.rm = T)
+low_wifi_paid<-sum(low_all%in% wifi_word_paid,na.rm = T)
+high_wifi_free<-sum(high_all%in% wifi_word_free,na.rm = T)
+low_wifi_free<-sum(low_all%in% wifi_word_free,na.rm = T)
 high_wifi_no<-sum(high_all%in% wifi_word_no,na.rm = T)
-low_wifi_yes<-sum(low_all%in% wifi_word_yes,na.rm = T)
 low_wifi_no<-sum(low_all%in% wifi_word_no,na.rm = T)
-x<-c(high_wifi_yes,high_wifi_no,low_wifi_yes,low_wifi_no)
-dim(x)<- c(2,2)
+x<-c(high_wifi_paid,high_wifi_free,high_wifi_no,low_wifi_paid,low_wifi_free,low_wifi_no)
+dim(x)<- c(3,2)
 chisq.test(x,correct = F)
 #Can't refuse Ho, so Ratings are not related with Wifi
 ##############################################################################################################
@@ -295,6 +281,35 @@ low_time<-opentime(low_all)
 high_time<-opentime(high_all)
 wilcox.test(low_time,high_time,alternative="less")
 #Can't refuse Ho, so Ratings are not related with opentime on Friday.
+
+
+
+
+
+
+
+
+
+
+#############################################################################################################
+word<-c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
+plotWordStar(all_review$stars,all_review$text,wordList=word,mfrow = c(4,4))
+#here I use "love" to check whether it can influence the rate
+key_word<-word[8]
+all_stars_with_key<-all_review$stars[which(grepl(key_word,all_review$text))]
+all_stars_without_key<-all_review$stars[-which(grepl(key_word,all_review$text))]
+wilcox.test(all_stars_with_key,all_stars_without_key,alternative="less")
+
+################ how different types of beer related to stars ######################
+AlcoholDrinks <- c("beer","Ale","wine","Rum","rum","Brandy","Gin","gin","Whisky","whisky","Whiskey","whiskey","Texas whiskey","Vodka","Absinthe","Tequila","cocktails","Cocktails")
+plotWordStar(all_review$stars,all_review$text,wordList=AlcoholDrinks,mfrow = c(1,2))
+
+# Cocktails,Absinthe, Vodka, Whiskey, Brandy, Rum, wine are good for restaurant.
+# beer, rum, gin, tequila are fairly normal for business.
+
+
+
+
 
 ############################# some other terms that may affect rating ########################################
 terms <- c("atmosphere","service","kids","family","clean")
