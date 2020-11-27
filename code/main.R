@@ -96,33 +96,65 @@ all_tip$text<-gsub("i\'m","i am",all_tip$text)
 all_tip$text<-gsub("it\'s","it is",all_tip$text)
 all_tip$text<-gsub("\\$","",all_tip$text)
 
-#############3 join review and pubs data frame and filter to get the reviews of all pubs in Wisconsin
+############## join review and pubs data frame and filter to get the reviews of all pubs in Wisconsin
 review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") #314845 entries
 sum(is.na(review_pubs$state))  # no NA's in state 
 review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  #50569 entries
 txt <- review_pubs_WI[,'text']
 
-# tokenize and remove stop words, then get the most frequent nouns and adjectives
-Noun<-unnest_tokens(tibble(txt=all_review$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%pull(word)
-frequency_of_noun <- table(Noun)
-sort(frequency_of_noun,decreasing = TRUE)[1:20]
+######### tokenize and remove stop words, then get the most frequent nouns and adjectives in review text
+Noun<-unnest_tokens(tibble(txt=all_review$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%count(word,sort = TRUE)
+TopNoun <- Noun[1:100,] # select top 100 
+#TopNoun <- Noun[Noun$n>quantile(Noun$n,0.99),] # select top 0.01
+summary(Noun)
+quantile(Noun$n,0.99) # frequency = 6715.44
 
-###### get the frequency of abjectives and adverb 
-Adj<-unnest_tokens(tibble(txt=all_review$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Adjective")) %>%pull(word)
-frequency_of_adj <- table(Adj)
-sort(frequency_of_adj,decreasing = TRUE)[1:20]
+Adj<-unnest_tokens(tibble(txt=all_review$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Adjective")) %>%count(word,sort = TRUE)
+TopAdj <- Adj[1:100,]  # select top 100 
+summary(Adj)
+quantile(Adj$n,0.99) # frequency = 6289
+Adj[100,'n']
 
+######### tokenize and remove stop words, then get the most frequent nouns and adjectives in tip text
+Noun_tip<-unnest_tokens(tibble(txt=all_tip$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%count(word,sort = TRUE)
+TopNoun_tip <- Noun_tip[1:100,] # select top 100 
+summary(Noun_tip)
+quantile(Noun_tip$n,0.99) # frequency = 279.29
 
+Adj_tip<-unnest_tokens(tibble(txt=all_tip$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Adjective")) %>%count(word,sort = TRUE)
+TopAdj_tip <- Adj_tip[1:100,]
+summary(Adj_tip)
+quantile(Adj_tip$n,0.99) 
 
+########### sentiment analysis of review and tip text
+sentiment_review <- c()
+for (i in 1:dim(all_review)[1]) {
+   tidy_review <- unnest_tokens(tibble(txt=all_review$text[i]),word, txt)%>%
+                  anti_join(stop_words) %>% 
+                  inner_join(get_sentiments("bing"))%>%
+                  count(word,sentiment)%>%
+                  spread(sentiment,n,fill = 0)
+   sentiment <- sum(tidy_review$positive)-sum(tidy_review$negative)
+   sentiment_review <- c(sentiment_review,sentiment)
+  # print(i)
+}
 
+write.csv(sentiment_review,file = "../output/sentiment_review.csv")
 
+#average_length_tip <- dim(unnest_tokens(tibble(txt=all_tip$text),word, txt))[1]/dim(all_tip)[1]
+sentiment_tip <- c()
+for (i in 1:dim(all_tip)[1]) {
+   tidy_tip <- unnest_tokens(tibble(txt=all_tip$text[i]),word, txt)%>%
+      anti_join(stop_words)%>% 
+      inner_join(get_sentiments("bing"))%>%
+      count(word,sentiment) %>%
+      spread(sentiment,n,fill = 0)
+   sentiment <- sum(tidy_tip$positive)-sum(tidy_tip$negative)
+   sentiment_tip <- c(sentiment_tip,sentiment)
+  # print(i)
+}
 
-
-
-
-
-
-
+write.csv(sentiment_tip,file = "../output/sentiment_tip.csv")
 
 
 
