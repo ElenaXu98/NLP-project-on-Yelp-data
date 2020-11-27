@@ -89,6 +89,11 @@ sq1 <- sqldf("select text, count(text ) count from all_review group by text havi
 all_review<-subset(all_review,!(text%in%sq1$text))
 all_user<-subset(all_user,user_id%in%all_review$user_id)
 all_tip<-subset(all_tip,user_id%in%all_user$user_id)
+
+#Remove the columns not related to the restaurants
+drops <- c("attributes.HairSpecializesIn","attributes.AcceptsInsurance")
+all_pubs = all_pubs[ , !(names(all_pubs) %in% drops)]
+
 #Below is the change to lower letter and some abbreviation in review.
 all_review$text<-tolower(all_review$text)
 all_review$text<-gsub("\'t"," not",all_review$text)
