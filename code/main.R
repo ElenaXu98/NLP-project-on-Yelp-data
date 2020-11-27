@@ -249,6 +249,12 @@ plotWordStar(all_review$stars,all_review$text,wordList=AlcoholDrinks,mfrow = c(1
 
 ######################################################
 #Test the existence of wifi's influence on ratings.
+#First we should transform the names in Wifi
+all_pubs$attributes.WiFi<-gsub("u'free'","'free'",all_pubs$attributes.WiFi)
+all_pubs$attributes.WiFi<-gsub("None","'no'",all_pubs$attributes.WiFi)
+all_pubs$attributes.WiFi<-gsub("u'no'","'no'",all_pubs$attributes.WiFi)
+all_pubs$attributes.WiFi<-gsub("u'paid'","'paid'",all_pubs$attributes.WiFi)
+
 plotWordStar(all_pubs$stars,all_pubs$attributes.WiFi,wordList=c("u'no'","u'free'","'no'","'free'","u'paid'","'paid'","None" ),mfrow = c(2,4))
 low_all<-all_pubs$attributes.WiFi[all_pubs$stars<ave_star]
 high_all<-all_pubs$attributes.WiFi[all_pubs$stars>ave_star]
