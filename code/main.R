@@ -100,7 +100,8 @@ all_tip$text<-gsub("\\$","",all_tip$text)
 review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") #314845 entries
 sum(is.na(review_pubs$state))  # no NA's in state 
 review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  #50569 entries
-txt <- review_pubs_WI[,'text']
+tip_pubs <- left_join(all_tip,all_pubs,how="left",by="business_id")
+tip_pubs_WI <- tip_pubs[tip_pubs$state == "WI",]  
 
 ######### tokenize and remove stop words, then get the most frequent nouns and adjectives in review text
 Noun<-unnest_tokens(tibble(txt=all_review$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%count(word,sort = TRUE)
@@ -155,6 +156,37 @@ for (i in 1:dim(all_tip)[1]) {
 }
 
 write.csv(sentiment_tip,file = "../output/sentiment_tip.csv")
+
+### sentiment analysis of reviews of pubs in Wisconsin
+sentiment_review_WI <- c()
+for (i in 1:dim(review_pubs_WI)[1]) {
+   tidy_review <- unnest_tokens(tibble(txt=review_pubs_WI$text[i]),word, txt)%>%
+      anti_join(stop_words) %>% 
+      inner_join(get_sentiments("bing"))%>%
+      count(word,sentiment)%>%
+      spread(sentiment,n,fill = 0)
+   sentiment <- sum(tidy_review$positive)-sum(tidy_review$negative)
+   sentiment_review_WI <- c(sentiment_review_WI,sentiment)
+   # print(i)
+}
+
+write.csv(sentiment_review_WI,file = "../output/sentiment_review_WI.csv")
+
+### sentiment analysis of tips of pubs in Wisconsin
+sentiment_tip_WI <- c()
+for (i in 1:dim(tip_pubs_WI)[1]) {
+   tidy_tip <- unnest_tokens(tibble(txt=tip_pubs_WI$text[i]),word, txt)%>%
+      anti_join(stop_words)%>% 
+      inner_join(get_sentiments("bing"))%>%
+      count(word,sentiment) %>%
+      spread(sentiment,n,fill = 0)
+   sentiment <- sum(tidy_tip$positive)-sum(tidy_tip$negative)
+   sentiment_tip_WI <- c(sentiment_tip_WI,sentiment)
+    print(i)
+}
+
+write.csv(sentiment_tip_WI,file = "../output/sentiment_tip_WI.csv")
+
 
 ########################### EDA ################################
 #Below is the function for plots in all_pubs.
@@ -281,6 +313,64 @@ low_time<-opentime(low_all)
 high_time<-opentime(high_all)
 wilcox.test(low_time,high_time,alternative="less")
 #Can't refuse Ho, so Ratings are not related with opentime on Friday.
+
+######################analysis the most frequent nouns in review and tips ####################################
+NounCandidate <- inner_join(TopNoun,TopNoun_tip,by="word")
+AdjCandidate <- inner_join(TopAdj,TopAdj_tip,by="word")
+topics <- c("time","menu","beer","staff","wait","atmosphere","waitress","hour","day","wine","location","home","bartender","family","patio","seating","free","parking","mexican","game","quick","friday","reservation","fast","tap","cheap")
+topics_index <- c()
+for (i in topics) {
+   topics_index <- c(topics_index,which(NounCandidate==i))
+}
+topic <- cbind(topics,topics_index)
+colnames(topic) <- c("topics","frequency_rank")
+write.csv(topic,file = "../output/topic_NLP.csv")
+
+
+business_id <- unique(review_pubs_WI$business_id)
+TimeSenti <- c()
+MenuSenti <- c()
+StaffSenti <- c()
+WaitressSenti <- c()
+bartenderSenti <- c()
+for (i in business_id) {
+   TimeIndex <- grepl("time",review_pubs_WI$text[review_pubs_WI$business_id==i])
+   TimeSentiBus <- mean(sentiment_review_WI[TimeIndex])
+   TimeSenti <- c(TimeSenti,TimeSentiBus)
+   
+   MenuIndex <- grepl("menu",review_pubs_WI$text[review_pubs_WI$business_id==i])
+   MenuSentiBus <- mean(sentiment_review_WI[MenuIndex])
+   MenuSenti <- c(MenuSenti,MenuSentiBus)
+
+   StaffIndex <- grepl("staff",review_pubs_WI$text[review_pubs_WI$business_id==i])
+   StaffSentiBus <- mean(sentiment_review_WI[StaffIndex])
+   StaffSenti <- c(StaffSenti,StaffSentiBus)
+  
+   WaitressIndex <- grepl("waitress",review_pubs_WI$text[review_pubs_WI$business_id==i])
+   WaitressSentiBus <- mean(sentiment_review_WI[WaitressIndex])
+   WaitressSenti <- c(WaitressSenti,WaitressSentiBus)
+   for (i in business_id) { 
+      print(i)    
+   bartenderIndex <- grepl("bartender",review_pubs_WI$text[review_pubs_WI$business_id==i])
+   bartenderSentiBus <- mean(sentiment_review_WI[bartenderIndex])
+   bartenderSenti <- c(bartenderSenti,bartenderSentiBus)
+}
+
+
+
+MenuIndex <- grepl("menu",all_review$text)
+MenuSenti <- sentiment_review[MenuIndex]
+t.test(MenuSenti,rep(0,length(MenuSenti)),alternative = "greater")
+
+
+MenuIndex <- grepl("atmosphere",all_review$text)
+MenuSenti <- sentiment_review[MenuIndex]
+t.test(MenuSenti,rep(0,length(MenuSenti)),alternative = "less")
+
+
+
+
+
 
 
 
