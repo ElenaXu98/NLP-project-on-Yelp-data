@@ -33,8 +33,8 @@ if (!require("TSA")) {
   stopifnot(require("TSA"))
 }
 if (!require("tidyverse")) {
-   install.packages("tidyverse")
-   stopifnot(require("tidyverse"))
+  install.packages("tidyverse")
+  stopifnot(require("tidyverse"))
 }
 
 ####################### data preprocessing ##################################################
@@ -148,13 +148,13 @@ quantile(Adj_tip$n,0.99)
 ########### sentiment analysis of review and tip text
 sentiment_review <- c()
 for (i in 1:dim(all_review)[1]) {
-   tidy_review <- unnest_tokens(tibble(txt=all_review$text[i]),word, txt)%>%
-                  anti_join(stop_words) %>% 
-                  inner_join(get_sentiments("bing"))%>%
-                  count(word,sentiment)%>%
-                  spread(sentiment,n,fill = 0)
-   sentiment <- sum(tidy_review$positive)-sum(tidy_review$negative)
-   sentiment_review <- c(sentiment_review,sentiment)
+  tidy_review <- unnest_tokens(tibble(txt=all_review$text[i]),word, txt)%>%
+    anti_join(stop_words) %>% 
+    inner_join(get_sentiments("bing"))%>%
+    count(word,sentiment)%>%
+    spread(sentiment,n,fill = 0)
+  sentiment <- sum(tidy_review$positive)-sum(tidy_review$negative)
+  sentiment_review <- c(sentiment_review,sentiment)
   # print(i)
 }
 
@@ -163,13 +163,13 @@ write.csv(sentiment_review,file = "../output/sentiment_review.csv")
 #average_length_tip <- dim(unnest_tokens(tibble(txt=all_tip$text),word, txt))[1]/dim(all_tip)[1]
 sentiment_tip <- c()
 for (i in 1:dim(all_tip)[1]) {
-   tidy_tip <- unnest_tokens(tibble(txt=all_tip$text[i]),word, txt)%>%
-      anti_join(stop_words)%>% 
-      inner_join(get_sentiments("bing"))%>%
-      count(word,sentiment) %>%
-      spread(sentiment,n,fill = 0)
-   sentiment <- sum(tidy_tip$positive)-sum(tidy_tip$negative)
-   sentiment_tip <- c(sentiment_tip,sentiment)
+  tidy_tip <- unnest_tokens(tibble(txt=all_tip$text[i]),word, txt)%>%
+    anti_join(stop_words)%>% 
+    inner_join(get_sentiments("bing"))%>%
+    count(word,sentiment) %>%
+    spread(sentiment,n,fill = 0)
+  sentiment <- sum(tidy_tip$positive)-sum(tidy_tip$negative)
+  sentiment_tip <- c(sentiment_tip,sentiment)
   # print(i)
 }
 
@@ -178,14 +178,14 @@ write.csv(sentiment_tip,file = "../output/sentiment_tip.csv")
 ### sentiment analysis of reviews of pubs in Wisconsin
 sentiment_review_WI <- c()
 for (i in 1:dim(review_pubs_WI)[1]) {
-   tidy_review <- unnest_tokens(tibble(txt=review_pubs_WI$text[i]),word, txt)%>%
-      anti_join(stop_words) %>% 
-      inner_join(get_sentiments("bing"))%>%
-      count(word,sentiment)%>%
-      spread(sentiment,n,fill = 0)
-   sentiment <- sum(tidy_review$positive)-sum(tidy_review$negative)
-   sentiment_review_WI <- c(sentiment_review_WI,sentiment)
-   # print(i)
+  tidy_review <- unnest_tokens(tibble(txt=review_pubs_WI$text[i]),word, txt)%>%
+    anti_join(stop_words) %>% 
+    inner_join(get_sentiments("bing"))%>%
+    count(word,sentiment)%>%
+    spread(sentiment,n,fill = 0)
+  sentiment <- sum(tidy_review$positive)-sum(tidy_review$negative)
+  sentiment_review_WI <- c(sentiment_review_WI,sentiment)
+  # print(i)
 }
 
 
@@ -194,14 +194,14 @@ write.csv(sentiment_review_WI,file = "../output/sentiment_review_WI.csv")
 ### sentiment analysis of tips of pubs in Wisconsin
 sentiment_tip_WI <- c()
 for (i in 1:dim(tip_pubs_WI)[1]) {
-   tidy_tip <- unnest_tokens(tibble(txt=tip_pubs_WI$text[i]),word, txt)%>%
-      anti_join(stop_words)%>% 
-      inner_join(get_sentiments("bing"))%>%
-      count(word,sentiment) %>%
-      spread(sentiment,n,fill = 0)
-   sentiment <- sum(tidy_tip$positive)-sum(tidy_tip$negative)
-   sentiment_tip_WI <- c(sentiment_tip_WI,sentiment)
-    print(i)
+  tidy_tip <- unnest_tokens(tibble(txt=tip_pubs_WI$text[i]),word, txt)%>%
+    anti_join(stop_words)%>% 
+    inner_join(get_sentiments("bing"))%>%
+    count(word,sentiment) %>%
+    spread(sentiment,n,fill = 0)
+  sentiment <- sum(tidy_tip$positive)-sum(tidy_tip$negative)
+  sentiment_tip_WI <- c(sentiment_tip_WI,sentiment)
+  print(i)
 }
 
 write.csv(sentiment_tip_WI,file = "../output/sentiment_tip_WI.csv")
@@ -210,6 +210,20 @@ write.csv(sentiment_tip_WI,file = "../output/sentiment_tip_WI.csv")
 ########################### EDA ################################
 #Below is the function for plots in all_pubs.
 plotWordStar <- function(stars,DTM,wordList,mfrow = c(4,4)) {
+  par(mfrow = mfrow)
+  
+  for (i in 1 :length(wordList)){
+    starsY = rep(0,5)
+    for(j in 2:10) {
+      k=j/2
+      dtm_vec = DTM[which(stars == k)]
+      numbers = sum(grepl(wordList[i],dtm_vec))
+      starsY[j]  = numbers / sum(stars == k)
+    }
+    
+    names(starsY)<-c(0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0)
+    barplot(starsY,main=wordList[i],xlab="Stars",ylab="proportion")
+  }  
    par(mfrow = mfrow)
    
    for (i in 1 :length(wordList)){
@@ -399,7 +413,7 @@ AdjCandidate <- inner_join(TopAdj,TopAdj_tip,by="word")
 topics <- c("time","menu","beer","staff","wait","atmosphere","waitress","hour","day","wine","location","home","bartender","family","patio","seating","free","parking","mexican","game","quick","friday","reservation","fast","tap","cheap")
 topics_index <- c()
 for (i in topics) {
-   topics_index <- c(topics_index,which(NounCandidate==i))
+  topics_index <- c(topics_index,which(NounCandidate==i))
 }
 topic <- cbind(topics,topics_index)
 colnames(topic) <- c("topics","frequency_rank")
@@ -413,33 +427,33 @@ StaffSenti <- c()
 WaitressSenti <- c()
 bartenderSenti <- c()
 for (i in business_id) {
-   TimeIndex <- grepl("time",review_pubs_WI$text[review_pubs_WI$business_id==i])
-   TimeSentiBus <- mean(sentiment_review_WI[TimeIndex & review_pubs_WI$business_id==i])
-   TimeSenti <- c(TimeSenti,TimeSentiBus)
-   
-   MenuIndex <- grepl("menu",review_pubs_WI$text[review_pubs_WI$business_id==i])
-   MenuSentiBus <- mean(sentiment_review_WI[MenuIndex & review_pubs_WI$business_id==i])
-   MenuSenti <- c(MenuSenti,MenuSentiBus)
-
-   StaffIndex <- grepl("staff",review_pubs_WI$text[review_pubs_WI$business_id==i])
-   StaffSentiBus <- mean(sentiment_review_WI[StaffIndex & review_pubs_WI$business_id==i])
-   StaffSenti <- c(StaffSenti,StaffSentiBus)
+  TimeIndex <- grepl("time",review_pubs_WI$text[review_pubs_WI$business_id==i])
+  TimeSentiBus <- mean(sentiment_review_WI[TimeIndex & review_pubs_WI$business_id==i])
+  TimeSenti <- c(TimeSenti,TimeSentiBus)
   
-   WaitressIndex <- grepl("waitress",review_pubs_WI$text[review_pubs_WI$business_id==i])
-   WaitressSentiBus <- mean(sentiment_review_WI[WaitressIndex & review_pubs_WI$business_id==i])
-   WaitressSenti <- c(WaitressSenti,WaitressSentiBus)
+  MenuIndex <- grepl("menu",review_pubs_WI$text[review_pubs_WI$business_id==i])
+  MenuSentiBus <- mean(sentiment_review_WI[MenuIndex & review_pubs_WI$business_id==i])
+  MenuSenti <- c(MenuSenti,MenuSentiBus)
   
-   bartenderIndex <- grepl("bartender",review_pubs_WI$text[review_pubs_WI$business_id==i])
-   bartenderSentiBus <- mean(sentiment_review_WI[bartenderIndex & review_pubs_WI$business_id==i])
-   bartenderSenti <- c(bartenderSenti,bartenderSentiBus)
+  StaffIndex <- grepl("staff",review_pubs_WI$text[review_pubs_WI$business_id==i])
+  StaffSentiBus <- mean(sentiment_review_WI[StaffIndex & review_pubs_WI$business_id==i])
+  StaffSenti <- c(StaffSenti,StaffSentiBus)
+  
+  WaitressIndex <- grepl("waitress",review_pubs_WI$text[review_pubs_WI$business_id==i])
+  WaitressSentiBus <- mean(sentiment_review_WI[WaitressIndex & review_pubs_WI$business_id==i])
+  WaitressSenti <- c(WaitressSenti,WaitressSentiBus)
+  
+  bartenderIndex <- grepl("bartender",review_pubs_WI$text[review_pubs_WI$business_id==i])
+  bartenderSentiBus <- mean(sentiment_review_WI[bartenderIndex & review_pubs_WI$business_id==i])
+  bartenderSenti <- c(bartenderSenti,bartenderSentiBus)
 }
 
 for (i in business_id) {
-   print(i)
-   TVIndex <- grepl("tv",review_pubs_WI$text[review_pubs_WI$business_id==i])
-   TVSentiBus <- mean(sentiment_review_WI[TVIndex & review_pubs_WI$business_id==i])
-   TVSenti <- c(TVSenti,TVSentiBus)
-   
+  print(i)
+  TVIndex <- grepl("tv",review_pubs_WI$text[review_pubs_WI$business_id==i])
+  TVSentiBus <- mean(sentiment_review_WI[TVIndex & review_pubs_WI$business_id==i])
+  TVSenti <- c(TVSenti,TVSentiBus)
+  
 }
 
 lm(review_pubs_WI$stars.y~)
@@ -527,7 +541,7 @@ Alcohol <- matrix(0,nrow=33,ncol = 2)
 colnames(Alcohol) <- c("noun","frequency")
 Alcohol[,1] <- c(AlcoholDrinks,AlcoholBrands,Cocktails)
 for (rownames(frequency_of_noun)%in%Alcohol[,1]) {
-   
+  
 }
 inner_join(Alcohol,freq,how="inner",on="noun")
 
@@ -536,14 +550,14 @@ inner_join(Alcohol,freq,how="inner",on="noun")
 ##################### sentiment analysis ##################################
 test_review <- all_review[1:1000,]
 if (packageVersion("devtools") < 1.6) {
-   install.packages("devtools")
+  install.packages("devtools")
 }
 text <- test_review[,'text']
 
 text %>%
-   inner_join(get_sentiments("bing")) %>%
-   filter(!is.na(sentiments)) %>%
-   count(sentiments,sort=TRUE)
+  inner_join(get_sentiments("bing")) %>%
+  filter(!is.na(sentiments)) %>%
+  count(sentiments,sort=TRUE)
 
 lexicon <- c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
 
