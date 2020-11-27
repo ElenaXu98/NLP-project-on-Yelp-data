@@ -9,28 +9,28 @@ if (!require("jsonlite")) {
   stopifnot(require("jsonlite"))
 }
 if (!require("stringr")) {
-   install.packages("stringr")
-   stopifnot(require("stringr"))
+  install.packages("stringr")
+  stopifnot(require("stringr"))
 }
 if (!require("sqldf")) {
-   install.packages("sqldf")
-   stopifnot(require("sqldf"))
+  install.packages("sqldf")
+  stopifnot(require("sqldf"))
 }
 if (!require("kernlab")) {
-   install.packages("kernlab")
-   stopifnot(require("kernlab"))
+  install.packages("kernlab")
+  stopifnot(require("kernlab"))
 }
 if (!require("tidytext")) {
-   install.packages("tidytext")
-   stopifnot(require("tidytext"))
+  install.packages("tidytext")
+  stopifnot(require("tidytext"))
 }
 if (!require("dplyr")) {
-   install.packages("dplyr")
-   stopifnot(require("dplyr"))
+  install.packages("dplyr")
+  stopifnot(require("dplyr"))
 }
 if (!require("TSA")) {
-   install.packages("TSA")
-   stopifnot(require("TSA"))
+  install.packages("TSA")
+  stopifnot(require("TSA"))
 }
 if (!require("tidyverse")) {
    install.packages("tidyverse")
@@ -46,32 +46,45 @@ user<-jsonlite::stream_in(file("../data/user_city.json"))
 #Then we need to decide what tags to stay.
 all_pubs<-data.frame()
 for (i in length(business$name):1)
+{
+  
+  judgement_pre<-strsplit(business$attributes$Alcohol[i],"'")[[1]]
+  judgement<-judgement_pre[2]
+  if(is.na(business$attributes$Alcohol[i])==0 &is.na(judgement)==0)
   {
-   
-   judgement_pre<-strsplit(business$attributes$Alcohol[i],"'")[[1]]
-   judgement<-judgement_pre[2]
-   if(is.na(business$attributes$Alcohol[i])==0 &is.na(judgement)==0)
-   {
-   if(judgement=="full_bar" | business$attributes$Alcohol[i]=="full_bar" )
-     {
-     #find the pub and record it.
-    all_pubs_pre<-data.frame(name=business$name[i],business_id=business$business_id[i],review_count=business$review_count[i],is.open=business$is_open[i],stars=business$stars[i],attributes=business$attributes[i,],hours=business$hours[i,],categories=business$categories[i],state=business$state[i],city=business$city[i])
-    all_pubs<-rbind(all_pubs,all_pubs_pre)
-   }
-   }
+    if(judgement=="full_bar" | business$attributes$Alcohol[i]=="full_bar" )
+    {
+      #find the pub and record it.
+      all_pubs_pre<-data.frame(name=business$name[i],business_id=business$business_id[i],review_count=business$review_count[i],is.open=business$is_open[i],stars=business$stars[i],attributes=business$attributes[i,],hours=business$hours[i,],categories=business$categories[i],state=business$state[i],city=business$city[i])
+      all_pubs<-rbind(all_pubs,all_pubs_pre)
+    }
   }
+}
+
+
 #Now we have all the data of pubs.
 #Next we need to find all open pubs
+
 all_pubs<-subset(all_pubs, is.open==1)
+
 #Then we will find the reviews that are related to the pubs.(It will be a long process to run the code below)
+
 all_review<-subset(review,business_id%in%all_pubs$business_id)
+
+
 #Here we got all the related reviews.
-#Then we will do the samething to the tip and user
+#Then we will do the same thing to the tip and user
+
 all_tip<-subset(tip,business_id%in%all_pubs$business_id)
 
 user_id_pre<-unique(all_review$user_id)
+
 all_user<-subset(user,user_id%in%user_id_pre)
+
+
+
 #In case that there are same comments, we decide to delete all the repeated data.
+
 sq1 <- sqldf("select text, count(text ) count from all_review group by text having count > 1")
 all_review<-subset(all_review,!(text%in%sq1$text))
 all_user<-subset(all_user,user_id%in%all_review$user_id)
@@ -170,6 +183,7 @@ for (i in 1:dim(review_pubs_WI)[1]) {
    # print(i)
 }
 
+
 write.csv(sentiment_review_WI,file = "../output/sentiment_review_WI.csv")
 
 ### sentiment analysis of tips of pubs in Wisconsin
@@ -208,22 +222,23 @@ plotWordStar <- function(stars,DTM,wordList,mfrow = c(4,4)) {
 }
 
 opentime <- function(time){
-   len<-length(time)
-   opentime<-rep(0,len)
-   for (i in 1:len){
-      time1_hour<- as.numeric(strsplit(strsplit(time[i],"-")[[1]][1],":")[[1]][1])
-      time1_minute<-as.numeric(strsplit(strsplit(time[i],"-")[[1]][1],":")[[1]][2])/60
-      time2_hour<-as.numeric(strsplit(strsplit(time[i],"-")[[1]][2],":")[[1]][1])
-      time2_minute<-as.numeric(strsplit(strsplit(time[i],"-")[[1]][2],":")[[1]][2])/60
-      if(time2_minute-time1_minute<0){minute<-time2_minute-time1_minute+1; time2_hour=time2_hour-1}else{minute<-time2_minute-time1_minute}
-      if(time2_hour-time1_hour<0){hour<-time2_hour-time1_hour+24}else{hour<-time2_hour-time1_hour}
-      opentime[i]<-hour+minute
-   }
-   return(opentime)
+  len<-length(time)
+  opentime<-rep(0,len)
+  for (i in 1:len){
+    time1_hour<- as.numeric(strsplit(strsplit(time[i],"-")[[1]][1],":")[[1]][1])
+    time1_minute<-as.numeric(strsplit(strsplit(time[i],"-")[[1]][1],":")[[1]][2])/60
+    time2_hour<-as.numeric(strsplit(strsplit(time[i],"-")[[1]][2],":")[[1]][1])
+    time2_minute<-as.numeric(strsplit(strsplit(time[i],"-")[[1]][2],":")[[1]][2])/60
+    if(time2_minute-time1_minute<0){minute<-time2_minute-time1_minute+1; time2_hour=time2_hour-1}else{minute<-time2_minute-time1_minute}
+    if(time2_hour-time1_hour<0){hour<-time2_hour-time1_hour+24}else{hour<-time2_hour-time1_hour}
+    opentime[i]<-hour+minute
+  }
+  return(opentime)
 }
 
 Test<-data.frame(No=1:8,H_0=rep(NA,8),method=rep(NA,8),p_value=rep(NA,8))
 ave_star<-quantile(all_pubs$stars)[3]
+
 ##############################################################################################################
 ###Test the influence of takeout
 plotWordStar(all_pubs$stars,all_pubs$attributes.RestaurantsTakeOut,wordList=c("True","False"),mfrow = c(1,2))
@@ -241,7 +256,8 @@ Test$method[1]<-"chisq-test"
 Test$p_value[1]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with takout
 ##############################################################################################################
-#Test the influence of GoodforGroups
+
+#Test the influence of Good for Groups
 plotWordStar(all_pubs$stars,all_pubs$attributes.RestaurantsGoodForGroups,wordList=c("True","False"),mfrow = c(1,2))
 low_all<-all_pubs$attributes.RestaurantsGoodForGroups[all_pubs$stars<ave_star]
 high_all<-all_pubs$attributes.RestaurantsGoodForGroups[all_pubs$stars>=ave_star]
@@ -258,6 +274,7 @@ Test$p_value[2]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with Goodforgroups
 ##############################################################################################################
 #Test the existence of TV
+
 plotWordStar(all_pubs$stars,all_pubs$attributes.HasTV,wordList=c("True","False"),mfrow = c(1,2))
 low_all<-all_pubs$attributes.HasTV[all_pubs$stars<ave_star]
 high_all<-all_pubs$attributes.HasTV[all_pubs$stars>=ave_star]
@@ -323,8 +340,10 @@ Test$H_0[5]<-"High Ratings are not related with the existence of Wifi"
 Test$method[5]<-"chisq-test"
 Test$p_value[5]<-chisq.test(x,correct = F)$p.value
 #Can't refuse Ho, so Ratings are not related with Wifi
+
 ##############################################################################################################
 #Test the restaurantdelivery
+
 plotWordStar(all_pubs$stars,all_pubs$attributes.RestaurantsDelivery,wordList=c("True","False"),mfrow = c(1,2))
 low_all<-all_pubs$attributes.RestaurantsDelivery[all_pubs$stars<ave_star]
 high_all<-all_pubs$attributes.RestaurantsDelivery[all_pubs$stars>ave_star]
@@ -339,7 +358,9 @@ Test$H_0[6]<-"High Ratings are not related with the existence of delivery"
 Test$method[6]<-"chisq-test"
 Test$p_value[6]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with delivery.
+
 ##############################################################################################################
+
 #Test the GoodforDancing
 plotWordStar(all_pubs$stars,all_pubs$attributes.GoodForDancing,wordList=c("True","False"),mfrow = c(1,2))
 low_all<-all_pubs$attributes.GoodForDancing[all_pubs$stars<ave_star]
@@ -355,6 +376,7 @@ Test$H_0[7]<-"High Ratings are not related with the influence of Goodfordancing"
 Test$method[7]<-"chisq-test"
 Test$p_value[7]<-chisq.test(x,correct = F)$p.value
 #Refuse Ho, so Ratings are related with dancing.
+
 ############################################################################################################
 low_all<-all_pubs$hours.Friday[all_pubs$stars<ave_star&is.na(all_pubs$hours.Friday)==0]
 high_all<-all_pubs$hours.Friday[all_pubs$stars>ave_star&is.na(all_pubs$hours.Friday)==0]
@@ -463,12 +485,11 @@ plotWordStar(all_review$stars[index],all_review$text[index],wordList=atomsphere_
 # casual, welcoming, inviting, cozy atmosphere are good for rating
 ############################ does different city, state has different preference? #######################3
 # preference of atmosphere
-library(dplyr)
-review_pubs <- left_join(all_review,all_pubs,by="business_id")
-plotWordStar(review_pubs$stars.y[review_pubs$state=="WI"],review_pubs$text[review_pubs$state=="WI"],wordList=atomsphere_words,mfrow = c(1,2))
-plotWordStar(review_pubs$stars.y[review_pubs$state=="OH"],review_pubs$text[review_pubs$state=="OH"],wordList=atomsphere_words,mfrow = c(1,2))
-plotWordStar(review_pubs$stars.y[review_pubs$state=="PA"],review_pubs$text[review_pubs$state=="PA"],wordList=atomsphere_words,mfrow = c(1,2))
-plotWordStar(review_pubs$stars.y[review_pubs$state=="IL"],review_pubs$text[review_pubs$state=="IL"],wordList=atomsphere_words,mfrow = c(1,2))
+index1 <- all_review$business_id==all_pubs$business_id
+index2 <- all_pubs$state == 'OH'
+length(all_pubs$state)
+sum(is.na(all_pubs$state))
+plotWordStar(all_review$stars[all_review$business_id==all_pubs$business_id & all_pubs$state == 'OH'],all_review$text[all_review$business_id==all_pubs$business_id & all_pubs$state == 'OH'],wordList=atomsphere_words,mfrow = c(1,2))
 
 
 
@@ -505,10 +526,6 @@ for (rownames(frequency_of_noun)%in%Alcohol[,1]) {
 }
 inner_join(Alcohol,freq,how="inner",on="noun")
 
-freq <- matrix(0,nrow=dim(frequency_of_noun),ncol=2)
-freq[,1] <- rownames(frequency_of_noun)
-freq[,2] <- as.vector(frequency_of_noun)
-colnames(freq) <- c("noun","frequency")
 
 
 ##################### sentiment analysis ##################################
