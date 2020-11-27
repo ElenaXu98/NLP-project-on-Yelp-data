@@ -156,9 +156,7 @@ for (i in 1:dim(all_tip)[1]) {
 
 write.csv(sentiment_tip,file = "../output/sentiment_tip.csv")
 
-
-
-######################## EDA #########################
+########################### EDA ################################
 #Below is the function for plots in all_pubs.
 plotWordStar <- function(stars,DTM,wordList,mfrow = c(4,4)) {
    par(mfrow = mfrow)
@@ -171,7 +169,7 @@ plotWordStar <- function(stars,DTM,wordList,mfrow = c(4,4)) {
          numbers = sum(grepl(wordList[i],dtm_vec))
          starsY[j]  = numbers / sum(stars == k)
       }
-      barplot(starsY,main=wordList[i],xlab="Stars",ylab="Word Freq")
+      barplot(starsY,main=wordList[i],xlab="Stars",ylab="Word Freq",)
    }  
 }
 
@@ -192,7 +190,7 @@ opentime <- function(time){
 
 ave_star<-quantile(all_pubs$stars)[3]
 ##############################################################################################################
-#Test the influence of takeout
+###Test the influence of takeout
 plotWordStar(all_pubs$stars,all_pubs$attributes.RestaurantsTakeOut,wordList=c("True","False"),mfrow = c(1,2))
 low_all<-all_pubs$attributes.RestaurantsTakeOut[all_pubs$stars<ave_star]
 high_all<-all_pubs$attributes.RestaurantsTakeOut[all_pubs$stars>ave_star]
