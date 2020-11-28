@@ -279,6 +279,7 @@ opentime <- function(time){
     if(time2_minute-time1_minute<0){minute<-time2_minute-time1_minute+1; time2_hour=time2_hour-1}else{minute<-time2_minute-time1_minute}
     if(time2_hour-time1_hour<0){hour<-time2_hour-time1_hour+24}else{hour<-time2_hour-time1_hour}
     opentime[i]<-hour+minute
+    if(opentime[i]==0){opentime[i]=24}
   }
   return(opentime)
 }
