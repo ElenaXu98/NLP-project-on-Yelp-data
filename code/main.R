@@ -115,9 +115,9 @@ all_tip$text<-gsub("it\'s","it is",all_tip$text)
 all_tip$text<-gsub("\\$","",all_tip$text)
 
 ############## join review and pubs data frame and filter to get the reviews of all pubs in Wisconsin
-review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") #314845 entries
-sum(is.na(review_pubs$state))  # no NA's in state 
-review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  #50569 entries
+review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") 
+#sum(is.na(review_pubs$state))  # no NA's in state 
+review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  
 tip_pubs <- left_join(all_tip,all_pubs,how="left",by="business_id")
 tip_pubs_WI <- tip_pubs[tip_pubs$state == "WI",]  
 
