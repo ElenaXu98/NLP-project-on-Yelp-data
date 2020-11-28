@@ -140,6 +140,99 @@ for (i in 1:length(all_pubs$attributes.BusinessParking))
 }
 }
 all_pubs$attributes.BusinessParking<-NULL
+
+all_pubs$attributes.GoodForMeal.dessert<-rep(NA,length(all_pubs$attributes.GoodForMeal))
+all_pubs$attributes.GoodForMeal.latenight<-rep(NA,length(all_pubs$attributes.GoodForMeal))
+all_pubs$attributes.GoodForMeal.lunch<-rep(NA,length(all_pubs$attributes.GoodForMeal))
+all_pubs$attributes.GoodForMeal.dinner<-rep(NA,length(all_pubs$attributes.GoodForMeal))
+all_pubs$attributes.GoodForMeal.brunch<-rep(NA,length(all_pubs$attributes.GoodForMeal))
+all_pubs$attributes.GoodForMeal.breakfast<-rep(NA,length(all_pubs$attributes.GoodForMeal))
+for (i in 1:length(all_pubs$attributes.GoodForMeal))
+{
+  if(is.na(all_pubs$attributes.GoodForMeal[i])==0){
+    if(all_pubs$attributes.GoodForMeal[i]==" None"){
+      all_pubs$attributes.GoodForMeal.dessert[i]<-" None"
+      all_pubs$attributes.GoodForMeal.latenight[i]<-" None"
+      all_pubs$attributes.GoodForMeal.lunch[i]<-" None"
+      all_pubs$attributes.GoodForMeal.dinner[i]<-" None"
+      all_pubs$attributes.GoodForMeal.brunch[i]<-" None"
+      all_pubs$attributes.GoodForMeal.breakfast[i]<-" None"
+    }else{
+      temp<-substr(all_pubs$attributes.GoodForMeal[i],2,nchar(all_pubs$attributes.GoodForMeal[i])-1)
+      temp<-strsplit(temp,",")[[1]]
+      all_pubs$attributes.GoodForMeal.dessert[i]<-strsplit(temp[1],":")[[1]][2]
+      all_pubs$attributes.GoodForMeal.latenight[i]<-strsplit(temp[2],":")[[1]][2]
+      all_pubs$attributes.GoodForMeal.lunch[i]<-strsplit(temp[3],":")[[1]][2]
+      all_pubs$attributes.GoodForMeal.dinner[i]<-strsplit(temp[4],":")[[1]][2]
+      all_pubs$attributes.GoodForMeal.brunch[i]<-strsplit(temp[5],":")[[1]][2]
+      all_pubs$attributes.GoodForMeal.breakfast[i]<-strsplit(temp[6],":")[[1]][2]
+    }
+  }
+}
+all_pubs$attributes.GoodForMeal<-NULL
+
+
+
+
+all_pubs$attributes.Ambience.touristy<-rep(NA,length(all_pubs$attributes.Ambience))
+all_pubs$attributes.Ambience.hipster<-rep(NA,length(all_pubs$attributes.Ambience))
+all_pubs$attributes.Ambience.romantic<-rep(NA,length(all_pubs$attributes.Ambience))
+all_pubs$attributes.Ambience.divey<-rep(NA,length(all_pubs$attributes.Ambience))
+all_pubs$attributes.Ambience.intimate<-rep(NA,length(all_pubs$attributes.Ambience))
+all_pubs$attributes.Ambience.trendy<-rep(NA,length(all_pubs$attributes.Ambience))
+all_pubs$attributes.Ambience.upscale<-rep(NA,length(all_pubs$attributes.Ambience))
+all_pubs$attributes.Ambience.classy<-rep(NA,length(all_pubs$attributes.Ambience))
+all_pubs$attributes.Ambience.casual<-rep(NA,length(all_pubs$attributes.Ambience))
+for (i in 1:length(all_pubs$attributes.Ambience))
+{
+  if(is.na(all_pubs$attributes.Ambience[i])==0){
+    temp<-substr(all_pubs$attributes.Ambience[i],2,nchar(all_pubs$attributes.Ambience[i])-1)
+    temp<-strsplit(temp,",")[[1]]
+    
+     if(length(temp)<9){
+      all_pubs$attributes.Ambience.touristy[i]<-" None"
+      all_pubs$attributes.Ambience.hipster[i]<-" None"
+      all_pubs$attributes.Ambience.romantic[i]<-" None"
+      all_pubs$attributes.Ambience.divey[i]<-" None"
+      all_pubs$attributes.Ambience.intimate[i]<-" None"
+      all_pubs$attributes.Ambience.trendy[i]<-" None"
+      all_pubs$attributes.Ambience.upscale[i]<-" None"
+      all_pubs$attributes.Ambience.classy[i]<-" None"
+      all_pubs$attributes.Ambience.casual[i]<-" None"
+      for (j in 1:length(temp))
+      {
+        temp2<-strsplit(temp[j],"'")[[1]][2]
+        if(temp2=="touristy"){all_pubs$attributes.Ambience.touristy[i]<-strsplit(temp[j],":")[[1]][2]}
+        if(temp2=="hipster"){all_pubs$attributes.Ambience.hipster[i]<-strsplit(temp[j],":")[[1]][2]}
+        if(temp2=="romantic"){all_pubs$attributes.Ambience.romantic[i]<-strsplit(temp[j],":")[[1]][2]}
+        if(temp2=="divey"){all_pubs$attributes.Ambience.divey[i]<-strsplit(temp[j],":")[[1]][2]}
+        if(temp2=="initimate"){ all_pubs$attributes.Ambience.intimate[i]<-strsplit(temp[j],":")[[1]][2]}
+        if(temp2=="trendy"){all_pubs$attributes.Ambience.trendy[i]<-strsplit(temp[j],":")[[1]][2]}
+        if(temp2=="upscale"){all_pubs$attributes.Ambience.upscale[i]<-strsplit(temp[j],":")[[1]][2]}
+        if(temp2=="classy"){all_pubs$attributes.Ambience.classy[i]<-strsplit(temp[j],":")[[1]][2]}
+        if(temp2=="casual"){all_pubs$attributes.Ambience.casual[i]<-strsplit(temp[j],":")[[1]][2]}
+      }
+      
+    }else{
+      
+      for (j in 1:9){
+        temp2<-strsplit(temp[j],"'")[[1]][2]
+      if(temp2=="touristy"){all_pubs$attributes.Ambience.touristy[i]<-strsplit(temp[j],":")[[1]][2]}
+      if(temp2=="hipster"){all_pubs$attributes.Ambience.hipster[i]<-strsplit(temp[j],":")[[1]][2]}
+      if(temp2=="romantic"){all_pubs$attributes.Ambience.romantic[i]<-strsplit(temp[j],":")[[1]][2]}
+      if(temp2=="divey"){all_pubs$attributes.Ambience.divey[i]<-strsplit(temp[j],":")[[1]][2]}
+      if(temp2=="initimate"){ all_pubs$attributes.Ambience.intimate[i]<-strsplit(temp[j],":")[[1]][2]}
+      if(temp2=="trendy"){all_pubs$attributes.Ambience.trendy[i]<-strsplit(temp[j],":")[[1]][2]}
+      if(temp2=="upscale"){all_pubs$attributes.Ambience.upscale[i]<-strsplit(temp[j],":")[[1]][2]}
+      if(temp2=="classy"){all_pubs$attributes.Ambience.classy[i]<-strsplit(temp[j],":")[[1]][2]}
+      if(temp2=="casual"){all_pubs$attributes.Ambience.casual[i]<-strsplit(temp[j],":")[[1]][2]}
+      }
+    }
+  }
+}
+all_pubs$attributes.Ambience<-NULL
+
+
 ############## join review and pubs data frame and filter to get the reviews of all pubs in Wisconsin
 review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") 
 #sum(is.na(review_pubs$state))  # no NA's in state 
