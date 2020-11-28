@@ -121,6 +121,9 @@ review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  #50569 entries
 tip_pubs <- left_join(all_tip,all_pubs,how="left",by="business_id")
 tip_pubs_WI <- tip_pubs[tip_pubs$state == "WI",]  
 
+write.csv(review_pubs,file = "../output/review_pubs.csv")
+write.csv(tip_pubs,file = "../output/tip_pubs.csv")
+
 ######### tokenize and remove stop words, then get the most frequent nouns and adjectives in review text
 Noun<-unnest_tokens(tibble(txt=all_review$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%count(word,sort = TRUE)
 TopNoun <- Noun[1:100,] # select top 100 
@@ -145,7 +148,7 @@ TopAdj_tip <- Adj_tip[1:100,]
 summary(Adj_tip)
 quantile(Adj_tip$n,0.99) 
 
-########### sentiment analysis of review and tip text
+########### get sentiment of review and tip text
 sentiment_review <- c()
 for (i in 1:dim(all_review)[1]) {
   tidy_review <- unnest_tokens(tibble(txt=all_review$text[i]),word, txt)%>%
@@ -457,11 +460,40 @@ for (i in business_id) {
   
 }
 
-lm(review_pubs_WI$stars.y~)
+#lm(review_pubs_WI$stars.y~)
+
+################ topic analysis
+library(topicmodels)
+data("AssociatedPress")
+tidy(AssociatedPress)
+
+review_words_WI <- tibble(txt=review_pubs_WI$text,review_id=review_pubs_WI$review_id) %>%
+                    unnest_tokens(word, txt)%>% 
+                    anti_join(stop_words)%>%
+                  count(review_id,word,sort=TRUE)
+                
+review_words_WI_sentiment_dtm <- review_words_WI %>%cast_dtm(review_id,word,n)
+                        
+#%>%inner_join(get_sentiments("bing"), by = c(word = "word"))
+
+ap_lda <- LDA(review_words_WI_sentiment_dtm, k = 5, control = list(seed = 1234))
+ap_topics <- tidy(ap_lda, matrix = "beta") 
+ap_topics #one-topic-per-term-per-row format
+
+ap_top_terms <- ap_topics %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+top_terms <- ap_top_terms
 
 
-
-
+ap_top_terms %>%
+  mutate(term = reorder_within(term, beta, topic))%>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered() # if error , run dev.off(), then plot again
 
 
 
@@ -512,25 +544,6 @@ sum(is.na(all_pubs$state))
 plotWordStar(all_review$stars[all_review$business_id==all_pubs$business_id & all_pubs$state == 'OH'],all_review$text[all_review$business_id==all_pubs$business_id & all_pubs$state == 'OH'],wordList=atomsphere_words,mfrow = c(1,2))
 
 
-
-####################################### NLP analysis of review text ########################################
-
-##### choose pubs and choose WI state 
-###### get the frequency of noun
-review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") #314845 entries
-sum(is.na(review_pubs$state)) # 267410 entries
-review_pubs <- review_pubs[is.na(review_pubs$state)==FALSE,] #47435 entries
-review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  #8931 entries
-txt <- review_pubs_WI[,'text']
-
-Noun<-unnest_tokens(tibble(txt=all_review$text),word, txt) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%pull(word)
-frequency_of_noun <- table(Noun)
-sort(frequency_of_noun,decreasing = TRUE)[1:20]
-
-###### get the frequency of abjectives and adverb 
-Adj<-unnest_tokens(tibble(txt=all_review$text),word, txt) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Adjective")) %>%pull(word)
-frequency_of_adj <- table(Adj)
-sort(frequency_of_adj,decreasing = TRUE)[1:20]
 
 
 ##### words about alcohol drinks 
