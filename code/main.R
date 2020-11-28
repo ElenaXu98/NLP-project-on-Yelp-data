@@ -563,8 +563,13 @@ text %>%
 lexicon <- c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
 
 
-
-
+pubs_categories = all_pubs %>%
+    select(name, business_id, review_count, stars, categories, state) %>% 
+    filter(review_count>3) %>%
+    group_by(business_id) %>%
+    unnest_tokens(categories, categories, token = 'regex', pattern=", ") %>%
+    mutate(value = 1) %>% 
+    spread(categories, value, fill = 0)
 
 
 
