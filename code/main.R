@@ -113,7 +113,33 @@ all_tip$text<-gsub("she\'s","she is",all_tip$text)
 all_tip$text<-gsub("i\'m","i am",all_tip$text)
 all_tip$text<-gsub("it\'s","it is",all_tip$text)
 all_tip$text<-gsub("\\$","",all_tip$text)
-
+#split the BusinessParking into 5 lines
+all_pubs$attributes.BusinessParking.garage<-rep(NA,length(all_pubs$attributes.BusinessParking))
+all_pubs$attributes.BusinessParking.street<-rep(NA,length(all_pubs$attributes.BusinessParking))
+all_pubs$attributes.BusinessParking.validated<-rep(NA,length(all_pubs$attributes.BusinessParking))
+all_pubs$attributes.BusinessParking.lot<-rep(NA,length(all_pubs$attributes.BusinessParking))
+all_pubs$attributes.BusinessParking.valet<-rep(NA,length(all_pubs$attributes.BusinessParking))
+for (i in 1:length(all_pubs$attributes.BusinessParking))
+{
+  if(is.na(all_pubs$attributes.BusinessParking[i])==0){
+  if(all_pubs$attributes.BusinessParking[i]==" None"){
+    all_pubs$attributes.BusinessParking.garage[i]<-" None"
+    all_pubs$attributes.BusinessParking.street[i]<-" None"
+    all_pubs$attributes.BusinessParking.validated[i]<-" None"
+    all_pubs$attributes.BusinessParking.lot[i]<-" None"
+    all_pubs$attributes.BusinessParking.valet[i]<-" None"
+  }else{
+  temp<-substr(all_pubs$attributes.BusinessParking[i],2,nchar(all_pubs$attributes.BusinessParking[i])-1)
+  temp<-strsplit(temp,",")[[1]]
+  all_pubs$attributes.BusinessParking.garage[i]<-strsplit(temp[1],":")[[1]][2]
+  all_pubs$attributes.BusinessParking.street[i]<-strsplit(temp[2],":")[[1]][2]
+  all_pubs$attributes.BusinessParking.validated[i]<-strsplit(temp[3],":")[[1]][2]
+  all_pubs$attributes.BusinessParking.lot[i]<-strsplit(temp[4],":")[[1]][2]
+  all_pubs$attributes.BusinessParking.valet[i]<-strsplit(temp[5],":")[[1]][2]
+  }
+}
+}
+all_pubs$attributes.BusinessParking<-NULL
 ############## join review and pubs data frame and filter to get the reviews of all pubs in Wisconsin
 review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") 
 #sum(is.na(review_pubs$state))  # no NA's in state 
