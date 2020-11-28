@@ -434,6 +434,48 @@ Test$H_0[8]<-"High Ratings are not related with the opentime on Friday"
 Test$method[8]<-"chisq-test"
 Test$p_value[8]<-chisq.test(x,correct = F)$p.value
 #Can't refuse Ho, so Ratings are not related with opentime on Friday.
+#############################################################################################################
+#Advice for the low stars pubs.
+low_pub<-all_pubs[all_pubs$stars<ave_star,]
+low_review<-subset(all_review, business_id %in% low_pub$business_id)
+review_low_pubs <- left_join(low_review,low_pub,how="left",by="business_id")
+low_Noun<-unnest_tokens(tibble(txt=low_review$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%pull(word)
+frequency_of_low_noun <- table(low_Noun)
+sort(frequency_of_low_noun,decreasing = TRUE)[1:100]
+low_1<-sum(grepl("food",low_review$text))/length(low_review$text)
+low_2<-sum(grepl("service",low_review$text))/length(low_review$text)
+low_3<-sum(grepl("cheese",low_review$text))/length(low_review$text)
+low_4<-sum(grepl("server",low_review$text))/length(low_review$text)
+low_5<-sum(grepl("salad",low_review$text))/length(low_review$text)
+low_6<-sum(grepl("staff",low_review$text))/length(low_review$text)
+low_7<-sum(grepl("sauce",low_review$text))/length(low_review$text)
+low_8<-sum(grepl("pizza",low_review$text))/length(low_review$text)
+low_9<-sum(grepl("drink",low_review$text))/length(low_review$text)
+low_10<-sum(grepl("beer",low_review$text))/length(low_review$text)
+low_11<-sum(grepl("price",low_review$text))/length(low_review$text)
+low_freq<-data.frame(topic=c("food","service","cheese","server","salad","staff","sauce","pizza","drink","beer","price"),frequence=c(low_1,low_2,low_3,low_4,low_5,low_6,low_7,low_8,low_9,low_10,low_11))
+low_freq
+###############################################################################################################
+#Advice for the low stars pubs.
+high_pub<-all_pubs[all_pubs$stars>=ave_star,]
+high_tip<-subset(all_tip, business_id %in% high_pub$business_id)
+tip_high_pubs <- left_join(high_tip,high_pub,how="left",by="business_id")
+high_Noun<-unnest_tokens(tibble(txt=high_tip$text),word, txt)%>%anti_join(stop_words) %>%left_join(parts_of_speech) %>%filter(pos %in% c("Noun")) %>%pull(word)
+frequency_of_high_noun <- table(high_Noun)
+sort(frequency_of_high_noun,decreasing = TRUE)[1:100]
+high_1<-sum(grepl("food",high_tip$text))/length(high_tip$text)
+high_2<-sum(grepl("service",high_tip$text))/length(high_tip$text)
+high_3<-sum(grepl("beer",high_tip$text))/length(high_tip$text)
+high_4<-sum(grepl("menu",high_tip$text))/length(high_tip$text)
+high_5<-sum(grepl("cheese",high_tip$text))/length(high_tip$text)
+high_6<-sum(grepl("burger",high_tip$text))/length(high_tip$text)
+high_7<-sum(grepl("atmosphere",high_tip$text))/length(high_tip$text)
+high_8<-sum(grepl("fish",high_tip$text))/length(high_tip$text)
+high_9<-sum(grepl("fries",high_tip$text))/length(high_tip$text)
+high_10<-sum(grepl("brunch",high_tip$text))/length(high_tip$text)
+high_freq<-data.frame(topic=c("food","service","beer","menu","cheese","burger","atmosphere","fish","fries","brunch"),frequence=c(high_1,high_2,high_3,high_4,high_5,high_6,high_7,high_8,high_9,high_10))
+high_freq
+#This is not obvious, so we try another way:use the 3 most useful tips made to the business in the shiny app.
 
 
 ################################## multiple regression ####################################
