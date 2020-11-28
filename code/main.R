@@ -117,9 +117,9 @@ all_tip$text<-gsub("\\$","",all_tip$text)
 ############## join review and pubs data frame and filter to get the reviews of all pubs in Wisconsin
 review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") 
 #sum(is.na(review_pubs$state))  # no NA's in state 
-review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  
+#review_pubs_WI <- review_pubs[review_pubs$state == "WI",]  
 tip_pubs <- left_join(all_tip,all_pubs,how="left",by="business_id")
-tip_pubs_WI <- tip_pubs[tip_pubs$state == "WI",]  
+#tip_pubs_WI <- tip_pubs[tip_pubs$state == "WI",]  
 
 write.csv(review_pubs,file = "../output/review_pubs.csv")
 write.csv(tip_pubs,file = "../output/tip_pubs.csv")
@@ -177,37 +177,6 @@ for (i in 1:dim(all_tip)[1]) {
 }
 
 write.csv(sentiment_tip,file = "../output/sentiment_tip.csv")
-
-### sentiment analysis of reviews of pubs in Wisconsin
-sentiment_review_WI <- c()
-for (i in 1:dim(review_pubs_WI)[1]) {
-  tidy_review <- unnest_tokens(tibble(txt=review_pubs_WI$text[i]),word, txt)%>%
-    anti_join(stop_words) %>% 
-    inner_join(get_sentiments("bing"))%>%
-    count(word,sentiment)%>%
-    spread(sentiment,n,fill = 0)
-  sentiment <- sum(tidy_review$positive)-sum(tidy_review$negative)
-  sentiment_review_WI <- c(sentiment_review_WI,sentiment)
-  # print(i)
-}
-sentiment_review_WI_bus <- cbind(review_pubs_WI$business_id,sentiment_review_WI)
-write.csv(sentiment_review_WI_bus,file = "../output/sentiment_review_WI.csv")
-
-### sentiment analysis of tips of pubs in Wisconsin
-sentiment_tip_WI <- c()
-for (i in 1:dim(tip_pubs_WI)[1]) {
-  tidy_tip <- unnest_tokens(tibble(txt=tip_pubs_WI$text[i]),word, txt)%>%
-    anti_join(stop_words)%>% 
-    inner_join(get_sentiments("bing"))%>%
-    count(word,sentiment) %>%
-    spread(sentiment,n,fill = 0)
-  sentiment <- sum(tidy_tip$positive)-sum(tidy_tip$negative)
-  sentiment_tip_WI <- c(sentiment_tip_WI,sentiment)
-  print(i)
-}
-
-write.csv(sentiment_tip_WI,file = "../output/sentiment_tip_WI.csv")
-
 
 ########################### EDA ################################
 #Below is the function for plots in all_pubs.
@@ -419,7 +388,7 @@ for (i in colnames(all_pubs)) {
 }
 attributes <- attributes[-c(1:5,23:32)]
 
-RegData <- all_pubs[all_pubs$state=="WI",c("business_id","stars",attributes)]
+RegData <- all_pubs[all_pubs$state=="WI",c("business_id","stars",attributes,"")]
 sentiment_bus <- tapply(sentiment_review_WI,review_pubs_WI$business_id,mean)
 RegData <- cbind(RegData,sentiment_bus)
 
@@ -543,10 +512,63 @@ model <- lm(stars~attributes.RestaurantsAttire+attributes.RestaurantsTakeOut+att
 model <- lm(stars~attributes.NoiseLevel+attributes.GoodForKids+attributes.RestaurantsReservations+attributes.HasTV+attributes.RestaurantsDelivery,data=RegData2 )
 summary(model)
 
+colnames(review_pubs_WI)
+
+lm(stars~opentime())
 
 
 
+Mon <- c()
+for (i in 1:466) {
+  if(is.na(all_pubs$hours.Monday[i])){
+    Mon[i] <- mean(opentime(na.omit(all_pubs$hours.Monday)))
+  }else{
+    Mon[i] <- opentime(all_pubs$hours.Monday[i])
+  }
+}
+Tue <- c()
+#a<- na.omit(all_pubs$hours.Tuesday)
+#mean(opentime(a))
+for (i in 1:466) {
+  if(is.na(all_pubs$hours.Tuesday[i])){
+    Tue[i] <- 10.52653
+  }else{
+    Tue[i] <- opentime(all_pubs$hours.Tuesday[i])
+  }
+}
+Wed <- c()
+for (i in 1:466) {
+  if(is.na(all_pubs$hours.Wednesday[i])){
+    all_pubs$hours.Wednesday[i] <- 10.59386
+  }
+}
+Thu <- c()
+for (i in 1:466) {
+  if(is.na(all_pubs$hours.Thursday[i])){
+    all_pubs$hours.Thursday[i] <- 10.76028
+  }
+}
+Fri <- c()
+for (i in 1:466) {
+  if(is.na(all_pubs$hours.Friday[i])){
+    all_pubs$hours.Friday[i] <- 11.5262
+  }
+}
+Sat <- c()
+for (i in 1:466) {
+  if(is.na(all_pubs$hours.Saturday[i])){
+    all_pubs$hours.Saturday[i] <- 11.9742
+  }
+}
+Sun <- c()
+for (i in 1:466) {
+  if(is.na(all_pubs$hours.Sunday[i])){
+    all_pubs$hours.Sunday[i] <- 10.99589
+  }
+}
 
+model <- lm(all_pubs$stars~Mon+Tue+Wed+Thu+Fri+Sat+Sun)
+summary(model)
 
 
 ######################analysis the most frequent nouns in review and tips ####################################
