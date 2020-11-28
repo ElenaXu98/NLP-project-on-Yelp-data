@@ -572,6 +572,22 @@ pubs_categories = all_pubs %>%
     spread(categories, value, fill = 0)
 
 
+####Exploring a new way to do the sentiment analysis
+american_tokens = review_pubs %>%
+  grepl("American", category)==TRUE %>%
+  unnest_tokens(tibble(txt=review_pubs$text),word, text)
+  
+lex = sentiments %>%
+  filter(lexicon =='bing')%>%
+  select(word, bing_score=score)
+
+pubs_sentiment = american_tokens %>%
+  inner_join(lex, by='word') %>%
+  group_by(review_id, stars)%>%
+  summarize(sentiment = mean(bing_score))
+  
+counted_words = american_tokens %>%
+  count(review_id, business_id, stars, word)
 
 
 
