@@ -457,8 +457,11 @@ for (i in colnames(all_pubs)) {
 }
 attributes <- attributes[-c(1:5,23:32)]
 
-RegData <- all_pubs[all_pubs$state=="WI",c("business_id","stars",attributes,"")]
-sentiment_bus <- tapply(sentiment_review_WI,review_pubs_WI$business_id,mean)
+RegData <- all_pubs[all_pubs$state=="WI",c("business_id","stars",attributes)]
+sentiment_bus <- tapply(sentiment_review,review_pubs_WI$business_id,mean)
+for (i in unique(review_pubs)) {
+  
+}
 RegData <- cbind(RegData,sentiment_bus)
 
 for (i in attributes) {
@@ -571,7 +574,7 @@ for (i in attributes) {
 }
 
 #### regression
-RegData2 <- RegData[,c(2:9,11:17,20)]
+RegData2 <- RegData[,c(2:16,20:24)]
 model <- step(lm(stars~.,data = RegData2),direction = "both",k=2,trace = F)
 summary(model)
 summary(lm(stars~.,data = RegData2))
@@ -581,63 +584,88 @@ model <- lm(stars~attributes.RestaurantsAttire+attributes.RestaurantsTakeOut+att
 model <- lm(stars~attributes.NoiseLevel+attributes.GoodForKids+attributes.RestaurantsReservations+attributes.HasTV+attributes.RestaurantsDelivery,data=RegData2 )
 summary(model)
 
-colnames(review_pubs_WI)
-
-lm(stars~opentime())
-
-
-
+##### regression on opening hours
 Mon <- c()
+a<- na.omit(all_pubs$hours.Monday)
 for (i in 1:466) {
   if(is.na(all_pubs$hours.Monday[i])){
-    Mon[i] <- mean(opentime(na.omit(all_pubs$hours.Monday)))
+    Mon[i] <- mean(opentime(a))
   }else{
     Mon[i] <- opentime(all_pubs$hours.Monday[i])
   }
 }
 Tue <- c()
-#a<- na.omit(all_pubs$hours.Tuesday)
-#mean(opentime(a))
+a<- na.omit(all_pubs$hours.Tuesday)
 for (i in 1:466) {
   if(is.na(all_pubs$hours.Tuesday[i])){
-    Tue[i] <- 10.52653
+    Tue[i] <- mean(opentime(a))
   }else{
     Tue[i] <- opentime(all_pubs$hours.Tuesday[i])
   }
 }
 Wed <- c()
+a<- na.omit(all_pubs$hours.Wednesday)
 for (i in 1:466) {
   if(is.na(all_pubs$hours.Wednesday[i])){
-    all_pubs$hours.Wednesday[i] <- 10.59386
+    Wed[i] <- mean(opentime(a))
+  }else{
+    Wed[i] <- opentime(all_pubs$hours.Wednesday[i])
   }
 }
 Thu <- c()
+a<- na.omit(all_pubs$hours.Thursday)
 for (i in 1:466) {
   if(is.na(all_pubs$hours.Thursday[i])){
-    all_pubs$hours.Thursday[i] <- 10.76028
+    Thu[i] <- mean(opentime(a))
+  }else{
+    Thu[i] <- opentime(all_pubs$hours.Thursday[i])
   }
 }
 Fri <- c()
+a<- na.omit(all_pubs$hours.Friday)
 for (i in 1:466) {
   if(is.na(all_pubs$hours.Friday[i])){
-    all_pubs$hours.Friday[i] <- 11.5262
+    Fri[i] <- mean(opentime(a))
+  }else{
+    Fri[i] <- opentime(all_pubs$hours.Friday[i])
   }
 }
 Sat <- c()
+a<- na.omit(all_pubs$hours.Saturday)
 for (i in 1:466) {
   if(is.na(all_pubs$hours.Saturday[i])){
-    all_pubs$hours.Saturday[i] <- 11.9742
+    Sat[i] <- mean(opentime(a))
+  }else{
+    Sat[i] <- opentime(all_pubs$hours.Saturday[i])
   }
 }
 Sun <- c()
+a<- na.omit(all_pubs$hours.Sunday)
 for (i in 1:466) {
   if(is.na(all_pubs$hours.Sunday[i])){
-    all_pubs$hours.Sunday[i] <- 10.99589
+    Sun[i] <- mean(opentime(a))
+  }else{
+    Sun[i] <- opentime(all_pubs$hours.Sunday[i])
   }
 }
-
 model <- lm(all_pubs$stars~Mon+Tue+Wed+Thu+Fri+Sat+Sun)
 summary(model)
+
+
+RegData2 <- cbind(RegData2,Mon,Tue,Wed,Thu,Fri,Sat,Sun)
+model <- step(lm(stars~.,data=RegData2),direction = "both",k=2,trace = F)
+summary(model)
+
+
+
+
+
+
+
+
+
+
+
 
 
 ######################analysis the most frequent nouns in review and tips ####################################
