@@ -66,7 +66,7 @@ for (i in length(business$name):1)
 #Next we need to find all open pubs
 
 all_pubs<-subset(all_pubs, is.open==1)
-
+all_pubs<-subset(all_pubs, state=="WI")
 #Then we will find the reviews that are related to the pubs.(It will be a long process to run the code below)
 
 all_review<-subset(review,business_id%in%all_pubs$business_id)
