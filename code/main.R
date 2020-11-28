@@ -190,9 +190,8 @@ for (i in 1:dim(review_pubs_WI)[1]) {
   sentiment_review_WI <- c(sentiment_review_WI,sentiment)
   # print(i)
 }
-
-
-write.csv(sentiment_review_WI,file = "../output/sentiment_review_WI.csv")
+sentiment_review_WI_bus <- cbind(review_pubs_WI$business_id,sentiment_review_WI)
+write.csv(sentiment_review_WI_bus,file = "../output/sentiment_review_WI.csv")
 
 ### sentiment analysis of tips of pubs in Wisconsin
 sentiment_tip_WI <- c()
@@ -410,6 +409,146 @@ Test$method[8]<-"chisq-test"
 Test$p_value[8]<-chisq.test(x,correct = F)$p.value
 #Can't refuse Ho, so Ratings are not related with opentime on Friday.
 
+
+################################## multiple regression ####################################
+attributes <- c()
+for (i in colnames(all_pubs)) {
+  if(sum(is.na(all_pubs[,i]))/dim(all_pubs)[1]<0.3 & i!="attributes.Alcohol"){
+    attributes <- c(attributes,i)
+  }
+}
+attributes <- attributes[-c(1:5,23:32)]
+
+RegData <- all_pubs[all_pubs$state=="WI",c("business_id","stars",attributes)]
+sentiment_bus <- tapply(sentiment_review_WI,review_pubs_WI$business_id,mean)
+RegData <- cbind(RegData,sentiment_bus)
+
+for (i in attributes) {
+  as.factor(RegData[,i])
+}
+
+RegData$attributes.RestaurantsAttire<-gsub("u'","",RegData$attributes.RestaurantsAttire)
+RegData$attributes.RestaurantsAttire<-gsub("'","",RegData$attributes.RestaurantsAttire)
+RegData$attributes.NoiseLevel<-gsub("u'","",RegData$attributes.NoiseLevel)
+RegData$attributes.NoiseLevel<-gsub("'","",RegData$attributes.NoiseLevel)
+
+sum(na.omit(RegData$attributes.RestaurantsTakeOut)=="True")>sum(na.omit(RegData$attributes.RestaurantsTakeOut)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.RestaurantsTakeOut[i])){
+    RegData$attributes.RestaurantsTakeOut[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.BusinessAcceptsCreditCards)=="True")>sum(na.omit(RegData$attributes.BusinessAcceptsCreditCards)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.BusinessAcceptsCreditCards[i])){
+    RegData$attributes.BusinessAcceptsCreditCards[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.GoodForKids)=="True")>sum(na.omit(RegData$attributes.GoodForKids)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.GoodForKids[i])){
+    RegData$attributes.GoodForKids[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.RestaurantsReservations)=="True")>sum(na.omit(RegData$attributes.RestaurantsReservations)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.RestaurantsReservations[i])){
+    RegData$attributes.RestaurantsReservations[i] <- "False"
+  }
+}
+sum(na.omit(RegData$attributes.RestaurantsGoodForGroups)=="True")>sum(na.omit(RegData$attributes.RestaurantsGoodForGroups)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.RestaurantsGoodForGroups[i])){
+    RegData$attributes.RestaurantsGoodForGroups[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.HasTV)=="True")>sum(na.omit(RegData$attributes.HasTV)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.HasTV[i])){
+    RegData$attributes.HasTV[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.BikeParking)=="True")>sum(na.omit(RegData$attributes.BikeParking)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.BikeParking[i])){
+    RegData$attributes.BikeParking[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.RestaurantsDelivery)=="True")>sum(na.omit(RegData$attributes.RestaurantsDelivery)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.RestaurantsDelivery[i])){
+    RegData$attributes.RestaurantsDelivery[i] <- "False"
+  }
+}
+sum(na.omit(RegData$attributes.OutdoorSeating)=="True")>sum(na.omit(RegData$attributes.OutdoorSeating)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.OutdoorSeating[i])){
+    RegData$attributes.OutdoorSeating[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.Caters)=="True")>sum(na.omit(RegData$attributes.Caters)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.Caters[i])){
+    RegData$attributes.Caters[i] <- "False"
+  }
+}
+sum(na.omit(RegData$attributes.WiFi)=="'free'")
+sum(na.omit(RegData$attributes.WiFi)=="'no'")
+sum(na.omit(RegData$attributes.WiFi)=="'paid'")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.WiFi[i])){
+    RegData$attributes.WiFi[i] <- "'free'"
+  }
+}
+
+sum(na.omit(RegData$attributes.NoiseLevel)=="very_loud")
+sum(na.omit(RegData$attributes.NoiseLevel)=="loud")
+sum(na.omit(RegData$attributes.NoiseLevel)=="average")
+sum(na.omit(RegData$attributes.NoiseLevel)=="quiet")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.NoiseLevel[i])){
+    RegData$attributes.NoiseLevel[i] <- "average"
+  }
+}
+sum(na.omit(RegData$attributes.RestaurantsAttire)=="formal")
+sum(na.omit(RegData$attributes.RestaurantsAttire)=="dressy")
+sum(na.omit(RegData$attributes.RestaurantsAttire)=="casual")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.RestaurantsAttire[i])){
+    RegData$attributes.RestaurantsAttire[i] <- "casual"
+  }
+}
+sum(na.omit(RegData$attributes.RestaurantsPriceRange2)==1)
+sum(na.omit(RegData$attributes.RestaurantsPriceRange2)==2)
+sum(na.omit(RegData$attributes.RestaurantsPriceRange2)==3)
+sum(na.omit(RegData$attributes.RestaurantsPriceRange2)==4)
+for (i in 1:466) {
+  if(is.na(RegData$attributes.RestaurantsPriceRange2[i])){
+    RegData$attributes.RestaurantsPriceRange2[i] <- 2
+  }
+}
+
+for (i in attributes) {
+  as.factor(RegData[,i])
+}
+
+#### regression
+RegData2 <- RegData[,c(2:9,11:17,20)]
+model <- step(lm(stars~.,data = RegData2),direction = "both",k=2,trace = F)
+summary(model)
+summary(lm(stars~.,data = RegData2))
+
+model <- lm(stars~attributes.RestaurantsAttire+attributes.RestaurantsTakeOut+attributes.BusinessAcceptsCreditCards+attributes.NoiseLevel+attributes.GoodForKids+attributes.RestaurantsReservations+attributes.RestaurantsGoodForGroups+attributes.RestaurantsPriceRange2+attributes.HasTV+attributes.BikeParking+attributes.RestaurantsDelivery+attributes.OutdoorSeating+attributes.Caters+attributes.WiFi+sentiment_bus,data=RegData2 )
+
+model <- lm(stars~attributes.NoiseLevel+attributes.GoodForKids+attributes.RestaurantsReservations+attributes.HasTV+attributes.RestaurantsDelivery,data=RegData2 )
+summary(model)
+
+
+
+
+
+
+
 ######################analysis the most frequent nouns in review and tips ####################################
 NounCandidate <- inner_join(TopNoun,TopNoun_tip,by="word")
 AdjCandidate <- inner_join(TopAdj,TopAdj_tip,by="word")
@@ -476,7 +615,7 @@ review_words_WI_sentiment_dtm <- review_words_WI %>%cast_dtm(review_id,word,n)
                         
 #%>%inner_join(get_sentiments("bing"), by = c(word = "word"))
 
-ap_lda <- LDA(review_words_WI_sentiment_dtm, k = 5, control = list(seed = 1234))
+ap_lda <- LDA(review_words_WI_sentiment_dtm, k = 3, control = list(seed = 1234))
 ap_topics <- tidy(ap_lda, matrix = "beta") 
 ap_topics #one-topic-per-term-per-row format
 
