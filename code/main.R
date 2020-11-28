@@ -506,10 +506,10 @@ plotWordStar(all_review$stars[index],all_review$text[index],wordList=atomsphere_
 ############################ does different city, state has different preference? #######################3
 # preference of atmosphere
 index1 <- all_review$business_id==all_pubs$business_id
-index2 <- all_pubs$state == 'OH'
+index2 <- all_pubs$state == 'WI'
 length(all_pubs$state)
 sum(is.na(all_pubs$state))
-plotWordStar(all_review$stars[all_review$business_id==all_pubs$business_id & all_pubs$state == 'OH'],all_review$text[all_review$business_id==all_pubs$business_id & all_pubs$state == 'OH'],wordList=atomsphere_words,mfrow = c(1,2))
+plotWordStar(all_review$stars[all_review$business_id==all_pubs$business_id & all_pubs$state == 'WI'],all_review$text[all_review$business_id==all_pubs$business_id & all_pubs$state == 'WI'],wordList=atomsphere_words,mfrow = c(1,2))
 
 
 
