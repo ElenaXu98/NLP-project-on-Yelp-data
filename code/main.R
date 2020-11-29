@@ -937,21 +937,52 @@ pubs_categories = all_pubs %>%
 
 
 ####Exploring a new way to do the sentiment analysis
-american_tokens = review_pubs %>%
-  grepl("American", category)==TRUE %>%
-  unnest_tokens(tibble(txt=review_pubs$text),word, text)
-  
-lex = sentiments %>%
-  filter(lexicon =='bing')%>%
-  select(word, bing_score=score)
+review_words_WI <- tibble(txt=review_pubs_WI$text,review_id=review_pubs_WI$review_id, business_id= review_pubs_WI$business_id, stars= review_pubs_WI$stars.x) %>%
+  unnest_tokens(word, txt)%>% 
+  anti_join(stop_words)%>%
+  filter(!word %in% stop_words$word, str_detect(word, "^[a-z']+$"))
+  count(review_id,word,stars,sort=TRUE)
 
-pubs_sentiment = american_tokens %>%
-  inner_join(lex, by='word') %>%
+  #not sure how to use
+pubs_sentiment = review_words_WI %>%
+  inner_join(get_sentiments('afinn'), by='word') %>%
   group_by(review_id, stars)%>%
-  summarize(sentiment = mean(bing_score))
+  summarize(sentiment=mean(value))
+
+count= review_words_WI%>%
+  count(business_id, review_id, stars, word)%>%
+  group_by(word)%>%
+  summarize(business_count = n_distinct(business_id), review_count=n(),average_stars = mean(stars))
   
-counted_words = american_tokens %>%
-  count(review_id, business_id, stars, word)
+count_most_words = count%>%
+  filter(review_count>=200, business_count>=20)
+
+count_pos = count_most_words%>%
+  arrange(desc(average_stars))
+
+count_neg = count_most_words%>%
+  arrange(average_stars)
+
+
+####PLOTS
+
+##Doesn't work, can't figure it out....
+count_most_words%>%
+  comparison.cloud(word,review_count, max.words = 200,
+            random.order = FALSE, colors = brewer.pal(8, "Dark2"))
+
+
+ggplot(count_most_words, aes(review_count, average_stars)) +
+  geom_point() +
+  geom_text(aes(label = word), check_overlap = TRUE, vjust = 1, hjust = 1) +
+  scale_x_log10() +
+  geom_hline(yintercept = mean(review_pubs_WI$stars.x), color = "red", lty = 2) +
+  xlab("# of reviews") +
+  ylab("Average Stars")
+
+###MODELS
+
+###REGRESSION
 
 
 
