@@ -279,7 +279,7 @@ for (i in 1:dim(all_review)[1]) {
   sentiment_review <- c(sentiment_review,sentiment)
   # print(i)
 }
-
+sentiment_review <- as.numeric(sentiment_review)
 write.csv(sentiment_review,file = "../output/sentiment_review.csv")
 
 #average_length_tip <- dim(unnest_tokens(tibble(txt=all_tip$text),word, txt))[1]/dim(all_tip)[1]
@@ -548,136 +548,16 @@ for (i in colnames(all_pubs)) {
     attributes <- c(attributes,i)
   }
 }
-attributes <- attributes[-c(1:5,23:32)]
+attributes <- attributes[-c(1,2,4,20:26,27,28)]
 
-RegData <- all_pubs[all_pubs$state=="WI",c("business_id","stars",attributes)]
-sentiment_bus <- tapply(sentiment_review,review_pubs_WI$business_id,mean)
-for (i in unique(review_pubs)) {
-  
-}
-RegData <- cbind(RegData,sentiment_bus)
+RegData <- all_pubs[,c("business_id",attributes)]
 
-for (i in attributes) {
-  as.factor(RegData[,i])
-}
+sentiment <- data.frame(all_review$business_id,sentiment_review)
+outcome <- sentiment %>% filter(sentiment_review>=0) %>% group_by(all_review.business_id)%>% summarise(positive=n())
+colnames(outcome) <- c("business_id","positive_num")
+RegData <- left_join(RegData,outcome,by="business_id")
+RegData$positive_num[which(is.na(RegData$positive_num))] <- 0
 
-RegData$attributes.RestaurantsAttire<-gsub("u'","",RegData$attributes.RestaurantsAttire)
-RegData$attributes.RestaurantsAttire<-gsub("'","",RegData$attributes.RestaurantsAttire)
-RegData$attributes.NoiseLevel<-gsub("u'","",RegData$attributes.NoiseLevel)
-RegData$attributes.NoiseLevel<-gsub("'","",RegData$attributes.NoiseLevel)
-
-sum(na.omit(RegData$attributes.RestaurantsTakeOut)=="True")>sum(na.omit(RegData$attributes.RestaurantsTakeOut)=="False")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.RestaurantsTakeOut[i])){
-    RegData$attributes.RestaurantsTakeOut[i] <- "True"
-  }
-}
-sum(na.omit(RegData$attributes.BusinessAcceptsCreditCards)=="True")>sum(na.omit(RegData$attributes.BusinessAcceptsCreditCards)=="False")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.BusinessAcceptsCreditCards[i])){
-    RegData$attributes.BusinessAcceptsCreditCards[i] <- "True"
-  }
-}
-sum(na.omit(RegData$attributes.GoodForKids)=="True")>sum(na.omit(RegData$attributes.GoodForKids)=="False")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.GoodForKids[i])){
-    RegData$attributes.GoodForKids[i] <- "True"
-  }
-}
-sum(na.omit(RegData$attributes.RestaurantsReservations)=="True")>sum(na.omit(RegData$attributes.RestaurantsReservations)=="False")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.RestaurantsReservations[i])){
-    RegData$attributes.RestaurantsReservations[i] <- "False"
-  }
-}
-sum(na.omit(RegData$attributes.RestaurantsGoodForGroups)=="True")>sum(na.omit(RegData$attributes.RestaurantsGoodForGroups)=="False")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.RestaurantsGoodForGroups[i])){
-    RegData$attributes.RestaurantsGoodForGroups[i] <- "True"
-  }
-}
-sum(na.omit(RegData$attributes.HasTV)=="True")>sum(na.omit(RegData$attributes.HasTV)=="False")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.HasTV[i])){
-    RegData$attributes.HasTV[i] <- "True"
-  }
-}
-sum(na.omit(RegData$attributes.BikeParking)=="True")>sum(na.omit(RegData$attributes.BikeParking)=="False")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.BikeParking[i])){
-    RegData$attributes.BikeParking[i] <- "True"
-  }
-}
-sum(na.omit(RegData$attributes.RestaurantsDelivery)=="True")>sum(na.omit(RegData$attributes.RestaurantsDelivery)=="False")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.RestaurantsDelivery[i])){
-    RegData$attributes.RestaurantsDelivery[i] <- "False"
-  }
-}
-sum(na.omit(RegData$attributes.OutdoorSeating)=="True")>sum(na.omit(RegData$attributes.OutdoorSeating)=="False")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.OutdoorSeating[i])){
-    RegData$attributes.OutdoorSeating[i] <- "True"
-  }
-}
-sum(na.omit(RegData$attributes.Caters)=="True")>sum(na.omit(RegData$attributes.Caters)=="False")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.Caters[i])){
-    RegData$attributes.Caters[i] <- "False"
-  }
-}
-sum(na.omit(RegData$attributes.WiFi)=="'free'")
-sum(na.omit(RegData$attributes.WiFi)=="'no'")
-sum(na.omit(RegData$attributes.WiFi)=="'paid'")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.WiFi[i])){
-    RegData$attributes.WiFi[i] <- "'free'"
-  }
-}
-
-sum(na.omit(RegData$attributes.NoiseLevel)=="very_loud")
-sum(na.omit(RegData$attributes.NoiseLevel)=="loud")
-sum(na.omit(RegData$attributes.NoiseLevel)=="average")
-sum(na.omit(RegData$attributes.NoiseLevel)=="quiet")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.NoiseLevel[i])){
-    RegData$attributes.NoiseLevel[i] <- "average"
-  }
-}
-sum(na.omit(RegData$attributes.RestaurantsAttire)=="formal")
-sum(na.omit(RegData$attributes.RestaurantsAttire)=="dressy")
-sum(na.omit(RegData$attributes.RestaurantsAttire)=="casual")
-for (i in 1:466) {
-  if(is.na(RegData$attributes.RestaurantsAttire[i])){
-    RegData$attributes.RestaurantsAttire[i] <- "casual"
-  }
-}
-sum(na.omit(RegData$attributes.RestaurantsPriceRange2)==1)
-sum(na.omit(RegData$attributes.RestaurantsPriceRange2)==2)
-sum(na.omit(RegData$attributes.RestaurantsPriceRange2)==3)
-sum(na.omit(RegData$attributes.RestaurantsPriceRange2)==4)
-for (i in 1:466) {
-  if(is.na(RegData$attributes.RestaurantsPriceRange2[i])){
-    RegData$attributes.RestaurantsPriceRange2[i] <- 2
-  }
-}
-
-for (i in attributes) {
-  as.factor(RegData[,i])
-}
-
-#### regression
-RegData2 <- RegData[,c(2:16,20:24)]
-model <- step(lm(stars~.,data = RegData2),direction = "both",k=2,trace = F)
-summary(model)
-summary(lm(stars~.,data = RegData2))
-
-model <- lm(stars~attributes.RestaurantsAttire+attributes.RestaurantsTakeOut+attributes.BusinessAcceptsCreditCards+attributes.NoiseLevel+attributes.GoodForKids+attributes.RestaurantsReservations+attributes.RestaurantsGoodForGroups+attributes.RestaurantsPriceRange2+attributes.HasTV+attributes.BikeParking+attributes.RestaurantsDelivery+attributes.OutdoorSeating+attributes.Caters+attributes.WiFi+sentiment_bus,data=RegData2 )
-
-model <- lm(stars~attributes.NoiseLevel+attributes.GoodForKids+attributes.RestaurantsReservations+attributes.HasTV+attributes.RestaurantsDelivery,data=RegData2 )
-summary(model)
-
-##### regression on opening hours
 Mon <- c()
 a<- na.omit(all_pubs$hours.Monday)
 for (i in 1:466) {
@@ -741,6 +621,160 @@ for (i in 1:466) {
     Sun[i] <- opentime(all_pubs$hours.Sunday[i])
   }
 }
+
+RegData <- data.frame(RegData,Mon,Tue,Wed,Thu,Fri,Sat,Sun)  ###### open hour parts cleaning done
+
+RegData$attributes.RestaurantsAttire<-gsub("u'","",RegData$attributes.RestaurantsAttire)
+RegData$attributes.RestaurantsAttire<-gsub("'","",RegData$attributes.RestaurantsAttire)
+RegData$attributes.NoiseLevel<-gsub("u'","",RegData$attributes.NoiseLevel)
+RegData$attributes.NoiseLevel<-gsub("'","",RegData$attributes.NoiseLevel)
+RegData$attributes.WiFi<-gsub("u'","",RegData$attributes.WiFi)
+RegData$attributes.WiFi<-gsub("'","",RegData$attributes.WiFi)
+
+for (i in attributes[-c(1,2,17)]) {
+  as.factor(RegData[,i])
+}
+
+sum(na.omit(RegData$attributes.RestaurantsAttire)=="formal")
+sum(na.omit(RegData$attributes.RestaurantsAttire)=="dressy")
+sum(na.omit(RegData$attributes.RestaurantsAttire)=="casual")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.RestaurantsAttire[i])){
+    RegData$attributes.RestaurantsAttire[i] <- "casual"
+  }
+}
+
+sum(na.omit(RegData$attributes.RestaurantsTakeOut)=="True")>sum(na.omit(RegData$attributes.RestaurantsTakeOut)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.RestaurantsTakeOut[i])){
+    RegData$attributes.RestaurantsTakeOut[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.BusinessAcceptsCreditCards)=="True")>sum(na.omit(RegData$attributes.BusinessAcceptsCreditCards)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.BusinessAcceptsCreditCards[i])){
+    RegData$attributes.BusinessAcceptsCreditCards[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.NoiseLevel)=="very_loud")
+sum(na.omit(RegData$attributes.NoiseLevel)=="loud")
+sum(na.omit(RegData$attributes.NoiseLevel)=="average")
+sum(na.omit(RegData$attributes.NoiseLevel)=="quiet")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.NoiseLevel[i])){
+    RegData$attributes.NoiseLevel[i] <- "average"
+  }
+}
+sum(na.omit(RegData$attributes.GoodForKids)=="True")>sum(na.omit(RegData$attributes.GoodForKids)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.GoodForKids[i])){
+    RegData$attributes.GoodForKids[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.RestaurantsReservations)=="True")>sum(na.omit(RegData$attributes.RestaurantsReservations)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.RestaurantsReservations[i])){
+    RegData$attributes.RestaurantsReservations[i] <- "False"
+  }
+}
+sum(na.omit(RegData$attributes.RestaurantsGoodForGroups)=="True")>sum(na.omit(RegData$attributes.RestaurantsGoodForGroups)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.RestaurantsGoodForGroups[i])){
+    RegData$attributes.RestaurantsGoodForGroups[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.RestaurantsPriceRange2)==1)
+sum(na.omit(RegData$attributes.RestaurantsPriceRange2)==2)
+sum(na.omit(RegData$attributes.RestaurantsPriceRange2)==3)
+sum(na.omit(RegData$attributes.RestaurantsPriceRange2)==4)
+for (i in 1:466) {
+  if(is.na(RegData$attributes.RestaurantsPriceRange2[i])){
+    RegData$attributes.RestaurantsPriceRange2[i] <- 2
+  }
+}
+
+sum(na.omit(RegData$attributes.HasTV)=="True")>sum(na.omit(RegData$attributes.HasTV)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.HasTV[i])){
+    RegData$attributes.HasTV[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.BikeParking)=="True")>sum(na.omit(RegData$attributes.BikeParking)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.BikeParking[i])){
+    RegData$attributes.BikeParking[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.RestaurantsDelivery)=="True")>sum(na.omit(RegData$attributes.RestaurantsDelivery)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.RestaurantsDelivery[i])){
+    RegData$attributes.RestaurantsDelivery[i] <- "False"
+  }
+}
+sum(na.omit(RegData$attributes.OutdoorSeating)=="True")>sum(na.omit(RegData$attributes.OutdoorSeating)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.OutdoorSeating[i])){
+    RegData$attributes.OutdoorSeating[i] <- "True"
+  }
+}
+sum(na.omit(RegData$attributes.Caters)=="True")>sum(na.omit(RegData$attributes.Caters)=="False")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.Caters[i])){
+    RegData$attributes.Caters[i] <- "False"
+  }
+}
+sum(na.omit(RegData$attributes.WiFi)=="free")
+sum(na.omit(RegData$attributes.WiFi)=="no")
+sum(na.omit(RegData$attributes.WiFi)=="paid")
+for (i in 1:466) {
+  if(is.na(RegData$attributes.WiFi[i])){
+    RegData$attributes.WiFi[i] <- "free"
+  }
+}
+
+
+sum(is.na(RegData$attributes.BusinessParking.garage))
+for (col in colnames(RegData)[19:37]) {
+  if(sum(na.omit(RegData[,col])=="True")>sum(na.omit(RegData[,col])=="False")){
+    for (i in 1:466) {
+      if(is.na(RegData[i,col])){
+        RegData[i,col] <- "True"
+      }
+    }
+  }else{
+    for (i in 1:466) {
+      if(is.na(RegData[i,col])){
+        RegData[i,col] <- "False"
+      }
+    }
+  }
+}
+
+for (i in attributes[-c(1,2,17)]) {
+  as.factor(RegData[,i])
+}
+
+RegData[,"Pos_Rev_rate"] <- RegData$positive_num/RegData$review_count
+RegData <- RegData[,-c(1,38)]
+#### regression
+model <- step(lm(stars~.,data=RegData),direction = "both",k=2,trace = F)
+summary(model)
+
+
+
+
+RegData2 <- RegData[,c(2:16,20:24)]
+model <- step(lm(stars~.,data = RegData2),direction = "both",k=2,trace = F)
+summary(model)
+summary(lm(stars~.,data = RegData2))
+
+model <- lm(stars~attributes.RestaurantsAttire+attributes.RestaurantsTakeOut+attributes.BusinessAcceptsCreditCards+attributes.NoiseLevel+attributes.GoodForKids+attributes.RestaurantsReservations+attributes.RestaurantsGoodForGroups+attributes.RestaurantsPriceRange2+attributes.HasTV+attributes.BikeParking+attributes.RestaurantsDelivery+attributes.OutdoorSeating+attributes.Caters+attributes.WiFi+sentiment_bus,data=RegData2 )
+
+model <- lm(stars~attributes.NoiseLevel+attributes.GoodForKids+attributes.RestaurantsReservations+attributes.HasTV+attributes.RestaurantsDelivery,data=RegData2 )
+summary(model)
+
+##### regression on opening hours
+
 model <- lm(all_pubs$stars~Mon+Tue+Wed+Thu+Fri+Sat+Sun)
 summary(model)
 
@@ -811,7 +845,7 @@ for (i in business_id) {
   
 }
 
-#lm(review_pubs_WI$stars.y~)
+lm(review_pubs$stars.y~TimeSenti+MenuSenti+StaffSenti+ServerSenti+bartenderSenti)
 
 ################ topic analysis
 library(topicmodels)
