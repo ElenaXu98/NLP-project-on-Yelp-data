@@ -206,7 +206,7 @@ for (i in 1:length(all_pubs$attributes.Ambience))
         if(temp2=="hipster"){all_pubs$attributes.Ambience.hipster[i]<-strsplit(temp[j],":")[[1]][2]}
         if(temp2=="romantic"){all_pubs$attributes.Ambience.romantic[i]<-strsplit(temp[j],":")[[1]][2]}
         if(temp2=="divey"){all_pubs$attributes.Ambience.divey[i]<-strsplit(temp[j],":")[[1]][2]}
-        if(temp2=="initimate"){ all_pubs$attributes.Ambience.intimate[i]<-strsplit(temp[j],":")[[1]][2]}
+        if(temp2=="intimate"){ all_pubs$attributes.Ambience.intimate[i]<-strsplit(temp[j],":")[[1]][2]}
         if(temp2=="trendy"){all_pubs$attributes.Ambience.trendy[i]<-strsplit(temp[j],":")[[1]][2]}
         if(temp2=="upscale"){all_pubs$attributes.Ambience.upscale[i]<-strsplit(temp[j],":")[[1]][2]}
         if(temp2=="classy"){all_pubs$attributes.Ambience.classy[i]<-strsplit(temp[j],":")[[1]][2]}
@@ -221,7 +221,7 @@ for (i in 1:length(all_pubs$attributes.Ambience))
       if(temp2=="hipster"){all_pubs$attributes.Ambience.hipster[i]<-strsplit(temp[j],":")[[1]][2]}
       if(temp2=="romantic"){all_pubs$attributes.Ambience.romantic[i]<-strsplit(temp[j],":")[[1]][2]}
       if(temp2=="divey"){all_pubs$attributes.Ambience.divey[i]<-strsplit(temp[j],":")[[1]][2]}
-      if(temp2=="initimate"){ all_pubs$attributes.Ambience.intimate[i]<-strsplit(temp[j],":")[[1]][2]}
+      if(temp2=="intimate"){ all_pubs$attributes.Ambience.intimate[i]<-strsplit(temp[j],":")[[1]][2]}
       if(temp2=="trendy"){all_pubs$attributes.Ambience.trendy[i]<-strsplit(temp[j],":")[[1]][2]}
       if(temp2=="upscale"){all_pubs$attributes.Ambience.upscale[i]<-strsplit(temp[j],":")[[1]][2]}
       if(temp2=="classy"){all_pubs$attributes.Ambience.classy[i]<-strsplit(temp[j],":")[[1]][2]}
