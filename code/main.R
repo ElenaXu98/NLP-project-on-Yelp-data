@@ -928,7 +928,7 @@ plotWordStar(all_review$stars[all_review$business_id==all_pubs$business_id & all
 AlcoholDrinks <- c("beer","Ale","wine","Rum","rum","Brandy","Gin","gin","Whisky","whisky","Whiskey","whiskey","Texas whiskey","Vodka","Absinthe","Tequila","cocktails","Cocktails")
 AlcoholBrands <- c("Smirnoff","Bacardi","Jack Daniel's","Crown Royal","Absolut","crown","bacardi","smirnoff")
 Cocktails <- c("martini","Martini","Long Island","pink lady","champagne","Manhattan","coquito")
-
+a
 Alcohol <- matrix(0,nrow=33,ncol = 2)
 colnames(Alcohol) <- c("noun","frequency")
 Alcohol[,1] <- c(AlcoholDrinks,AlcoholBrands,Cocktails)
