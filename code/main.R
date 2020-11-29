@@ -499,8 +499,8 @@ low_time<-opentime(low_all)
 high_time<-opentime(high_all)
 wilcox.test(low_time,high_time,alternative="less")
 Test$H_0[8]<-"High Ratings are not related with the opentime on Friday"
-Test$method[8]<-"chisq-test"
-Test$p_value[8]<-chisq.test(x,correct = F)$p.value
+Test$method[8]<-"wilcox-test"
+Test$p_value[8]<-wilcox.test(x,correct = F)$p.value
 #Can't refuse Ho, so Ratings are not related with opentime on Friday.
 write.csv(Test,"test.csv")
 #############################################################################################################
