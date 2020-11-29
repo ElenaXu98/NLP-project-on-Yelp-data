@@ -418,7 +418,7 @@ all_pubs$attributes.WiFi<-gsub("None","'no'",all_pubs$attributes.WiFi)
 all_pubs$attributes.WiFi<-gsub("u'no'","'no'",all_pubs$attributes.WiFi)
 all_pubs$attributes.WiFi<-gsub("u'paid'","'paid'",all_pubs$attributes.WiFi)
 
-plotWordStar(all_pubs$stars,all_pubs$attributes.WiFi,wordList=c("'no'","'free'","'paid'" ),mfrow = c(2,4))
+plotWordStar(all_pubs$stars,all_pubs$attributes.WiFi,wordList=c("'no'","'free'","'paid'" ),mfrow = c(1,3))
 low_all<-all_pubs$attributes.WiFi[all_pubs$stars<ave_star]
 high_all<-all_pubs$attributes.WiFi[all_pubs$stars>=ave_star]
 wifi_word_yes<-c("'free'","'paid'")
