@@ -232,6 +232,11 @@ for (i in 1:length(all_pubs$attributes.Ambience))
 }
 all_pubs$attributes.Ambience<-NULL
 
+for (i in 50:69){
+all_pubs[,i]<-gsub(" None","None",all_pubs[,i])
+all_pubs[,i]<-gsub(" True","True",all_pubs[,i])
+all_pubs[,i]<-gsub(" False","False",all_pubs[,i])
+}
 
 ############## join review and pubs data frame and filter to get the reviews of all pubs in Wisconsin
 review_pubs <- left_join(all_review,all_pubs,how="left",by="business_id") 
