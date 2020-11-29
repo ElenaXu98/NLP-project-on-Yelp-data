@@ -1017,8 +1017,21 @@ ggplot(count_most_words, aes(review_count, average_stars)) +
 ###MODELS
 
 ###REGRESSION
+###REGRESSION
+##this is just to see if this makes sense, we can split this randomly using a seed
+library(glmnet)
+train = count_most_words[1:1200,]
+test = count_most_words[1201:1528,]
 
+y_train = train$average_stars
+x_train = train$word
+lambdas <- 10^seq(3, -2, by = -.1)
 
+set.seed(245623)
+fit = cv.glmnet(x,y,family='multinomial')
+summary(fit)
+
+y_predicted = predict(fit, s = opt_lambda, newx=test$words)
 
 
 
