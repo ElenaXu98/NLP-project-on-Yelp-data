@@ -304,21 +304,7 @@ write.csv(sentiment_tip,file = "../output/sentiment_tip.csv")
 
 ########################### EDA ################################
 #Below is the function for plots in all_pubs.
-plotWordStar <- function(stars,DTM,wordList,mfrow = c(4,4)) {
-  par(mfrow = mfrow)
-  
-  for (i in 1 :length(wordList)){
-    starsY = rep(0,5)
-    for(j in 2:10) {
-      k=j/2
-      dtm_vec = DTM[which(stars == k)]
-      numbers = sum(grepl(wordList[i],dtm_vec))
-      starsY[j]  = numbers / sum(stars == k)
-    }
-    
-    names(starsY)<-c(0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0)
-    barplot(starsY,main=wordList[i],xlab="Stars",ylab="proportion")
-  }  
+plotWordStar <- function(stars,DTM,wordList,mfrow = c(4,4)) { 
    par(mfrow = mfrow)
    
    for (i in 1 :length(wordList)){
