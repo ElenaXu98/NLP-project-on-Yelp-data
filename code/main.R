@@ -393,6 +393,7 @@ Test$p_value[3]<-chisq.test(x,correct = F)$p.value
 
 #############################################################################################################
 word<-c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
+word <- c("bar","dinner","sauce","salad","fish","pizza","burger","sandwich","steak")
 plotWordStar(all_review$stars,all_review$text,wordList=word,mfrow = c(1,2))
 #here I use "love" to check whether it can influence the rate
 key_word<-word[8]
@@ -481,7 +482,14 @@ Test$H_0[8]<-"High Ratings are not related with the opentime on Friday"
 Test$method[8]<-"wilcox-test"
 Test$p_value[8]<-wilcox.test(x,correct = F)$p.value
 #Can't refuse Ho, so Ratings are not related with opentime on Friday.
-write.csv(Test,"test.csv")
+write.csv(Test,"../output/test.csv")
+
+par(mfrow=c(1,1))
+hist(all_pubs$stars,main="pubs' stars",xlab="stars")
+hist(all_review$stars,main="review' stars",xlab="stars")
+
+
+
 #############################################################################################################
 #Advice for the low stars pubs.
 low_pub<-all_pubs[all_pubs$stars<ave_star,]
