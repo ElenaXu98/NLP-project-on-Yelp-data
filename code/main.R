@@ -771,6 +771,9 @@ RegData2 <- RegData[-c(113,30,13),]
 model2 <- step(lm(stars~.,data=RegData2),direction = "both",k=2,trace = F)
 summary(model2)
 plot(model2)
+id<-all_pubs$business_id
+id<-id[-c(113,30,13)]
+RegData2$id<-id
 write.csv(RegData2,file = "../output/regdata.csv")
 
 
