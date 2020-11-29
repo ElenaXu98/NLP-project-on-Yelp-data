@@ -206,7 +206,7 @@ for (i in 1:length(all_pubs$attributes.Ambience))
         if(temp2=="hipster"){all_pubs$attributes.Ambience.hipster[i]<-strsplit(temp[j],":")[[1]][2]}
         if(temp2=="romantic"){all_pubs$attributes.Ambience.romantic[i]<-strsplit(temp[j],":")[[1]][2]}
         if(temp2=="divey"){all_pubs$attributes.Ambience.divey[i]<-strsplit(temp[j],":")[[1]][2]}
-        if(temp2=="initimate"){ all_pubs$attributes.Ambience.intimate[i]<-strsplit(temp[j],":")[[1]][2]}
+        if(temp2=="intimate"){ all_pubs$attributes.Ambience.intimate[i]<-strsplit(temp[j],":")[[1]][2]}
         if(temp2=="trendy"){all_pubs$attributes.Ambience.trendy[i]<-strsplit(temp[j],":")[[1]][2]}
         if(temp2=="upscale"){all_pubs$attributes.Ambience.upscale[i]<-strsplit(temp[j],":")[[1]][2]}
         if(temp2=="classy"){all_pubs$attributes.Ambience.classy[i]<-strsplit(temp[j],":")[[1]][2]}
@@ -221,7 +221,7 @@ for (i in 1:length(all_pubs$attributes.Ambience))
       if(temp2=="hipster"){all_pubs$attributes.Ambience.hipster[i]<-strsplit(temp[j],":")[[1]][2]}
       if(temp2=="romantic"){all_pubs$attributes.Ambience.romantic[i]<-strsplit(temp[j],":")[[1]][2]}
       if(temp2=="divey"){all_pubs$attributes.Ambience.divey[i]<-strsplit(temp[j],":")[[1]][2]}
-      if(temp2=="initimate"){ all_pubs$attributes.Ambience.intimate[i]<-strsplit(temp[j],":")[[1]][2]}
+      if(temp2=="intimate"){ all_pubs$attributes.Ambience.intimate[i]<-strsplit(temp[j],":")[[1]][2]}
       if(temp2=="trendy"){all_pubs$attributes.Ambience.trendy[i]<-strsplit(temp[j],":")[[1]][2]}
       if(temp2=="upscale"){all_pubs$attributes.Ambience.upscale[i]<-strsplit(temp[j],":")[[1]][2]}
       if(temp2=="classy"){all_pubs$attributes.Ambience.classy[i]<-strsplit(temp[j],":")[[1]][2]}
@@ -304,21 +304,7 @@ write.csv(sentiment_tip,file = "../output/sentiment_tip.csv")
 
 ########################### EDA ################################
 #Below is the function for plots in all_pubs.
-plotWordStar <- function(stars,DTM,wordList,mfrow = c(4,4)) {
-  par(mfrow = mfrow)
-  
-  for (i in 1 :length(wordList)){
-    starsY = rep(0,5)
-    for(j in 2:10) {
-      k=j/2
-      dtm_vec = DTM[which(stars == k)]
-      numbers = sum(grepl(wordList[i],dtm_vec))
-      starsY[j]  = numbers / sum(stars == k)
-    }
-    
-    names(starsY)<-c(0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0)
-    barplot(starsY,main=wordList[i],xlab="Stars",ylab="proportion")
-  }  
+plotWordStar <- function(stars,DTM,wordList,mfrow = c(4,4)) { 
    par(mfrow = mfrow)
    
    for (i in 1 :length(wordList)){
@@ -407,7 +393,7 @@ Test$p_value[3]<-chisq.test(x,correct = F)$p.value
 
 #############################################################################################################
 word<-c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
-plotWordStar(all_review$stars,all_review$text,wordList=word,mfrow = c(4,4))
+plotWordStar(all_review$stars,all_review$text,wordList=word,mfrow = c(1,2))
 #here I use "love" to check whether it can influence the rate
 key_word<-word[8]
 all_stars_with_key<-all_review$stars[which(grepl(key_word,all_review$text))]
@@ -417,7 +403,7 @@ Test$H_0[4]<-"High Ratings are not related with the appearence of word 'love'"
 Test$method[4]<-"wilcox-test"
 Test$p_value[4]<-wilcox.test(all_stars_with_key,all_stars_without_key,alternative="less")$p.value
 ################ how different types of beer related to stars ######################
-AlcoholDrinks <- c("beer","Ale","wine","Rum","rum","Brandy","Gin","gin","Whisky","whisky","Whiskey","whiskey","Texas whiskey","Vodka","Absinthe","Tequila","cocktails","Cocktails")
+AlcoholDrinks <- c("beer","ale","wine","rum","brandy","gin","whisky","vodka","absinthe","tequila","cocktails")
 plotWordStar(all_review$stars,all_review$text,wordList=AlcoholDrinks,mfrow = c(1,2))
 
 # Cocktails,Absinthe, Vodka, Whiskey, Brandy, Rum, wine are good for restaurant.
@@ -432,24 +418,17 @@ all_pubs$attributes.WiFi<-gsub("None","'no'",all_pubs$attributes.WiFi)
 all_pubs$attributes.WiFi<-gsub("u'no'","'no'",all_pubs$attributes.WiFi)
 all_pubs$attributes.WiFi<-gsub("u'paid'","'paid'",all_pubs$attributes.WiFi)
 
-plotWordStar(all_pubs$stars,all_pubs$attributes.WiFi,wordList=c("u'no'","u'free'","'no'","'free'","u'paid'","'paid'","None" ),mfrow = c(2,4))
+plotWordStar(all_pubs$stars,all_pubs$attributes.WiFi,wordList=c("'no'","'free'","'paid'" ),mfrow = c(1,3))
 low_all<-all_pubs$attributes.WiFi[all_pubs$stars<ave_star]
 high_all<-all_pubs$attributes.WiFi[all_pubs$stars>=ave_star]
-wifi_word_paid<-c("u'paid'","'paid'")
-wifi_word_free<-c("u'free'","'free'")
-wifi_word_no<-c("u'no'","'no'","None")
-high_wifi_paid<-sum(high_all%in% wifi_word_paid,na.rm = T)
-low_wifi_paid<-sum(low_all%in% wifi_word_paid,na.rm = T)
-high_wifi_free<-sum(high_all%in% wifi_word_free,na.rm = T)
-low_wifi_free<-sum(low_all%in% wifi_word_free,na.rm = T)
-high_all<-all_pubs$attributes.WiFi[all_pubs$stars>ave_star]
 wifi_word_yes<-c("'free'","'paid'")
 wifi_word_no<-c("'no'")
 high_wifi_yes<-sum(high_all%in% wifi_word_yes,na.rm = T)
 high_wifi_no<-sum(high_all%in% wifi_word_no,na.rm = T)
 low_wifi_no<-sum(low_all%in% wifi_word_no,na.rm = T)
-x<-c(high_wifi_paid,high_wifi_free,high_wifi_no,low_wifi_paid,low_wifi_free,low_wifi_no)
-dim(x)<- c(3,2)
+low_wifi_yes<-sum(low_all%in% wifi_word_yes,na.rm = T)
+x<-c(high_wifi_yes,high_wifi_no,low_wifi_yes,low_wifi_no)
+dim(x)<- c(2,2)
 chisq.test(x,correct = F)
 Test$H_0[5]<-"High Ratings are not related with the existence of Wifi"
 Test$method[5]<-"chisq-test"
