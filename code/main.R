@@ -764,30 +764,14 @@ RegData <- RegData[,-c(1,38)]
 #### regression
 model <- step(lm(stars~.,data=RegData),direction = "both",k=2,trace = F)
 summary(model)
+### model diagnostics
+plot(model)
 
-
-
-
-RegData2 <- RegData[,c(2:16,20:24)]
-model <- step(lm(stars~.,data = RegData2),direction = "both",k=2,trace = F)
-summary(model)
-summary(lm(stars~.,data = RegData2))
-
-model <- lm(stars~attributes.RestaurantsAttire+attributes.RestaurantsTakeOut+attributes.BusinessAcceptsCreditCards+attributes.NoiseLevel+attributes.GoodForKids+attributes.RestaurantsReservations+attributes.RestaurantsGoodForGroups+attributes.RestaurantsPriceRange2+attributes.HasTV+attributes.BikeParking+attributes.RestaurantsDelivery+attributes.OutdoorSeating+attributes.Caters+attributes.WiFi+sentiment_bus,data=RegData2 )
-
-model <- lm(stars~attributes.NoiseLevel+attributes.GoodForKids+attributes.RestaurantsReservations+attributes.HasTV+attributes.RestaurantsDelivery,data=RegData2 )
-summary(model)
-
-##### regression on opening hours
-
-model <- lm(all_pubs$stars~Mon+Tue+Wed+Thu+Fri+Sat+Sun)
-summary(model)
-
-
-RegData2 <- cbind(RegData2,Mon,Tue,Wed,Thu,Fri,Sat,Sun)
-model <- step(lm(stars~.,data=RegData2),direction = "both",k=2,trace = F)
-summary(model)
-
+RegData2 <- RegData[-c(113,30,13),]
+model2 <- step(lm(stars~.,data=RegData2),direction = "both",k=2,trace = F)
+summary(model2)
+plot(model2)
+write.csv(RegData2,file = "../output/regdata.csv")
 
 
 
