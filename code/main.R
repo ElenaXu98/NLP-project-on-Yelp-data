@@ -502,6 +502,7 @@ Test$H_0[8]<-"High Ratings are not related with the opentime on Friday"
 Test$method[8]<-"chisq-test"
 Test$p_value[8]<-chisq.test(x,correct = F)$p.value
 #Can't refuse Ho, so Ratings are not related with opentime on Friday.
+write.csv(Test,"test.csv")
 #############################################################################################################
 #Advice for the low stars pubs.
 low_pub<-all_pubs[all_pubs$stars<ave_star,]
@@ -522,7 +523,7 @@ low_9<-sum(grepl("drink",low_review$text))/length(low_review$text)
 low_10<-sum(grepl("beer",low_review$text))/length(low_review$text)
 low_11<-sum(grepl("price",low_review$text))/length(low_review$text)
 low_freq<-data.frame(topic=c("food","service","cheese","server","salad","staff","sauce","pizza","drink","beer","price"),frequence=c(low_1,low_2,low_3,low_4,low_5,low_6,low_7,low_8,low_9,low_10,low_11))
-low_freq
+write.csv(low_freq,"low_freq.csv")
 ###############################################################################################################
 #Advice for the low stars pubs.
 high_pub<-all_pubs[all_pubs$stars>=ave_star,]
@@ -542,7 +543,7 @@ high_8<-sum(grepl("fish",high_tip$text))/length(high_tip$text)
 high_9<-sum(grepl("fries",high_tip$text))/length(high_tip$text)
 high_10<-sum(grepl("brunch",high_tip$text))/length(high_tip$text)
 high_freq<-data.frame(topic=c("food","service","beer","menu","cheese","burger","atmosphere","fish","fries","brunch"),frequence=c(high_1,high_2,high_3,high_4,high_5,high_6,high_7,high_8,high_9,high_10))
-high_freq
+write.csv(high_freq,"high_freq.csv")
 #This is not obvious, so we try another way:use the 3 most useful tips made to the business in the shiny app.
 
 
