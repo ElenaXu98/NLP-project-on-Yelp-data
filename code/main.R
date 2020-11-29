@@ -727,7 +727,7 @@ for (i in 1:466) {
 
 
 sum(is.na(RegData$attributes.BusinessParking.garage))
-for (col in colnames(RegData)[19:37]) {
+for (col in colnames(RegData)[19:38]) {
   if(sum(na.omit(RegData[,col])=="True")>sum(na.omit(RegData[,col])=="False")){
     for (i in 1:466) {
       if(is.na(RegData[i,col])){
@@ -748,7 +748,7 @@ for (i in attributes[-c(1,2,17)]) {
 }
 
 RegData[,"Pos_Rev_rate"] <- RegData$positive_num/RegData$review_count
-RegData <- RegData[,-c(1,38)]
+RegData <- RegData[,-c(1,39)]
 #### regression
 model <- step(lm(stars~.,data=RegData),direction = "both",k=2,trace = F)
 summary(model)
