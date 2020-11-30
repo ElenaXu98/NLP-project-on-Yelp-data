@@ -15,39 +15,6 @@ if (!require("fields")) {
   stopifnot(require("fields"))
 }
 business<-jsonlite::stream_in(file("business_city.json"))  
-ui<-fluidPage(
-
-    titlePanel("Pubs Information"),
-    sidebarPanel(
-    splitLayout(textInput("n1",label=h5("Pub id"),width = 200),
-    selectInput("n2",label=h5("AcceptsCreditCards"),choices = c("Yes","No","Not decided"),width = 120)),
-    
-    splitLayout(selectInput("n3",label=h5("Reservations"),choices = c("Yes","No","Not decided"),width = 120),
-    selectInput("n4",label=h5("GoodForGroups"),choices = c("Yes","No","Not decided"),width = 120)),
-    
-    splitLayout(selectInput("n5",label=h5("Has TV"),choices = c("Yes","No","Not decided"),width = 120),
-    selectInput("n6",label=h5("Has RestaurantsDelivery"),choices = c("Yes","No","Not decided"),width = 120)),
-    
-    splitLayout(selectInput("n7",label=h5("Has WIFI"),choices = c("Yes","No","Not decided","Paid"),width = 120),
-    selectInput("n8",label=h5("Has parking lot"),choices = c("Yes","No","Not decided"),width = 120)),
-    
-    splitLayout(selectInput("n9",label=h5("Has parking valet"),choices = c("Yes","No","Not decided"),width = 120),
-    selectInput("n10",label=h5("GoodForMeal in latenight"),choices = c("Yes","No","Not decided"),width = 120)),
-    
-    splitLayout(selectInput("n11",label=h5("divey Ambience"),choices = c("Yes","No","Not decided"),width = 120),
-    numericInput("n12",label = h5("Open time on Monday"),value=12,min=0,max=24,width = 80)),
-    
-    splitLayout(numericInput("n13",label = h5("Open time on Saturday"),value=12,min=0,max=24,width = 80),
-    selectInput("n14",label=h5("trendy Ambience"),choices = c("Yes","No","Not decided"),width = 120)),
-),
-    mainPanel(
-    hr(),
-    verbatimTextOutput("value1"),
-    verbatimTextOutput("value2"),
-    verbatimTextOutput("value3")
-    )
-)
-
 f<-function(x)
 {
  
@@ -148,7 +115,7 @@ server<-function(input,output){
      f(c(input$n1,input$n2,input$n3,input$n4,input$n5,input$n6,input$n7,input$n8,input$n9,input$n10,input$n11,input$n12,input$n13,input$n14))
    })
    output$value3 = renderPrint({
+     print("if p-value <0.05, we reject H_0")
      read.csv("test.csv")
    })
 }
-shinyApp(ui = ui, server = server) #二者结合为shiny
