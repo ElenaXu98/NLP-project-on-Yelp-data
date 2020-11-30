@@ -53,4 +53,11 @@ The plots in this section show the proportion of a specific attribute of a busin
 Note that most of attributes are discrete. 
 We plotted a histogram showing the distribution of the stars for each attribute. 
 
+## Model Diagnostics
+After finalizing the EDA and after some statistical tests gave us the thorough insight in our data, we decided to use multiple regression model for answering our statistical questions. One of the main questions we wanted to answer was whether or not the work hours of a pub have any affect on the star rating. After standardizing work hours for each day of the week, we preceded to prepare other attributes for the regression model. These attributes were the predictors that we used in our model that we found that were significant to the star rating in our exploratory analysis. The predictors were work hours, restaurant attire, noise level, presence of WiFi, takeout and other atrtibutes provided in the business dataset, along with the sentiment analysis of the reviews. The results were: ..... someone add this part 
+
+## Data-Drive Business Plan
+
+## Conclusion
+
 
