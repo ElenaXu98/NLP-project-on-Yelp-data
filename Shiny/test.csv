@@ -1,0 +1,7 @@
+"","No","H_0","method","p_value"
+"1",1,"High Ratings are not related with the existence of takeout","chisq-test",0.465891428148572
+"2",2,"High Ratings are not related with the existence of TV","chisq-test",0.00169135324650463
+"3",3,"High Ratings are not related with the appearence of word 'love'","wilcox-test",0.0710680371143844
+"4",4,"High Ratings are not related with the existence of delivery","chisq-test",0.00744323143558185
+"5",5,"High Ratings are not related with the influence of Goodfordancing","chisq-test",0.763446448537065
+"6",6,"High Ratings are not related with the opentime on Friday","wilcox-test",0.125
