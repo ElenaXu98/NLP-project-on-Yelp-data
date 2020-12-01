@@ -376,10 +376,8 @@ Test$p_value[2]<-chisq.test(x,correct = F)$p.value
 
 #############################################################################################################
 word<-c("love","yummy","great","good","nice","wonderful", "amazing", "ordinary", "hate", "bad","worst","disappoint", "awful", "terrific", "decent", "average")
-word <- c("bar","dinner","sauce","salad","fish","pizza","burger","sandwich","steak")
-word <- c("service","atmosphere")
 plotWordStar(all_review$stars,all_review$text,wordList=word,mfrow = c(1,1))
-#here I use "love" to check whether it can influence the rate
+#here I use "ordinary" to check whether it can influence the rate
 key_word<-word[8]
 all_stars_with_key<-all_review$stars[which(grepl(key_word,all_review$text))]
 all_stars_without_key<-all_review$stars[-which(grepl(key_word,all_review$text))]
