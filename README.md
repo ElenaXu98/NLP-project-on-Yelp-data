@@ -97,8 +97,8 @@ beer, Ale, wine, Rum, Brandy, Gin, Whisky/whiskey, Texas whiskey, Vodka, Absinth
 
 ###### several questions that we want to answer
 
-- Does atmosphere matters for pubs rating? What kinds of atmoshpere are good?
-- Does pubs suitable for family?
+- What features can influence the rating of a pub?
+- What can the owner do to increase the rating?
 - What kinds of alcohol drinks are good for pubs' rating?
 - ...
 
