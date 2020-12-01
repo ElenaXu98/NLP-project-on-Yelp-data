@@ -27,7 +27,7 @@ Contains all the images relevant for the summary and the presentation
 Contains the output datasets produced by the `main.R`. Following is the description of each file.
 | Dataset | Description  |
 |---|---|
-|`regdata.csv` |  edit |
+|`regdata.csv` |  The data used to do the regression |
 | `sentiment_review`  | Sentiment analysis output of the reviews  of the pubs in the original dataset.  |
 |  `sentiment_review_WI.csv` | Sentiment analysis output of the reviews of all the Wisconsin pubs.  |
 |  `sentiment_tip.csv` | Sentiment analysis output of the tips of the pubs in the original dataset.  |
@@ -38,7 +38,7 @@ Contains the output datasets produced by the `main.R`. Following is the descript
 
 ### categories we will focus on
 
-pubs
+pubs in WI
 
 ### the main question we want to solve
 
@@ -67,9 +67,8 @@ What pubs can do to improve their business based on yelp reviews
   2. filter:
      1.  Is_open == 1
      2. Alcohol variable with “full_bar” string
-
-- Some futuer ideas:
-  - convert reviews into a 
+     3. state == "WI"
+ 
 
 ### Several aspects of pubs that we can analysis
 
@@ -81,7 +80,7 @@ Evaluation words: cozy, festive, amazing, great, free, inviting, chill, warm, we
 
 ##### food()
 
-Detect words: 
+Frequency of food will be found and be used to give suggestions.
 
 ##### alcohol drinks
 
