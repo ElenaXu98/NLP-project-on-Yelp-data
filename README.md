@@ -53,17 +53,17 @@ What pubs can do to improve their business based on yelp reviews
 ## Data preprocessing details
 
 - User_city.json
-  1. Keeping tags: 'average_stars','fans','review_count','useful','user_id','yelping_since'
+  1. Keeping all tags.
   2. Delete missing values
 - Tip_city.json
-  1. Keeping tags: 'business_id','text','user_id'
+  1. Keeping all tags.
   2. Delete missing values
 - Review_city.json
-  1. Keeping tags:'business_id','review_id','stars','text','user_id'
+  1. Keeping all tags.
   2. Merge with user_city.json on user_id by left join
   3. Delete reviews duplicates that have exactly the same text
 - Business_city.json
-  1. Keeping tags: 
+  1. Keeping tags which is useful in the analysis.
   2. filter:
      1.  Is_open == 1
      2. Alcohol variable with “full_bar” string
@@ -87,12 +87,12 @@ Frequency of food will be found and be used to give suggestions.
 ###### Different kinds of alcohol drinks
 
 - fermented drinks: beer, Ale, wine
-- distilled drinks: Rum, Brandy, Gin, Whisky/whiskey, Texas whiskey, Vodka, Absinthe, Tequila 
+- distilled drinks: Rum, Brandy, Gin, whiskey, Texas whiskey, Vodka, Absinthe, Tequila 
 - cocktails
 
 ###### Detect words:	
 
-beer, Ale, wine, Rum, Brandy, Gin, Whisky/whiskey, Texas whiskey, Vodka, Absinthe, Tequila, cocktails, Cocktails
+beer, Ale, wine, Rum, Brandy, Gin, whiskey, Texas whiskey, Vodka, Absinthe, Tequila, cocktails, Cocktails
 
 ###### several questions that we want to answer
 
