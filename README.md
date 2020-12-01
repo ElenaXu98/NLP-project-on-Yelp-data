@@ -106,5 +106,5 @@ beer, Ale, wine, Rum, Brandy, Gin, Whisky/whiskey, Texas whiskey, Vodka, Absinth
 | Name  | Email  |
 |---|---|
 | Yinqiu Xu | add email  |
-| Xiaofeng Wang |  add email |
+| Xiaofeng Wang |  xwang2443@wisc.edu |
 |  Milica Cvetkovic |mcvetkovic@wisc.edu|
