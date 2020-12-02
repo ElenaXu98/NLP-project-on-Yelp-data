@@ -382,7 +382,7 @@ key_word<-word[8]
 all_stars_with_key<-all_review$stars[which(grepl(key_word,all_review$text))]
 all_stars_without_key<-all_review$stars[-which(grepl(key_word,all_review$text))]
 wilcox.test(all_stars_with_key,all_stars_without_key,alternative="less")
-Test$H_0[3]<-"High Ratings are not related with the appearence of word 'love'"
+Test$H_0[3]<-"High Ratings are not related with the appearence of word 'ordinary'"
 Test$method[3]<-"wilcox-test"
 Test$p_value[3]<-wilcox.test(all_stars_with_key,all_stars_without_key,alternative="less")$p.value
 ################ how different types of beer related to stars ######################
