@@ -18,8 +18,8 @@ Contains the output datasets produced by the `main.R`. Following is the descript
 | `sentiment_review.csv` | Sentiment analysis output of the reviews of all the Wisconsin pubs.  |
 |  `sentiment_tip.csv` | Sentiment analysis output of the tips of all the Wisconsin pubs. |
 | `regdata.csv` | Sentiment analysis output of the tips of all the Wisconsin pubs.  |
-| `high_freq.csv` | edit  |
-| `low_freq.csv` | Edit |
+| `high_freq.csv` | Word frequency of high-rating tips. |
+| `low_freq.csv` | Word frequency of low-rating reviews. |
 | `test.csv` | Output of statistical tests |
 
 ### Presentation
