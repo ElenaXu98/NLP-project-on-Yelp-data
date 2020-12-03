@@ -9,6 +9,8 @@ The 'code' folder contains the following files:
 - `DataPreprocessing.ipybnb` exploratory notebook
 - `scriptR.ipybn` exploratory notebook
 
+*Please create a `NLP-project-on-Yelp-data/data/` folder and put all the four json files in it. Then set your working directory as `NLP-project-on-Yelp-data/code/` before run the `main.R`*
+
 ### output
 Contains the output datasets produced by the `main.R`. Following is the description of each file.
 | Dataset | Description  |
