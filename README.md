@@ -6,8 +6,8 @@ In this project, we give business suggestions to **pubs in Wisconsin** on how to
 The 'code' folder contains the following files:
 
 - `main.R` contains all of the code for the project
-- `DataPreprocessing.ipybnb` exploratory notebook
-- `scriptR.ipybn` exploratory notebook
+- `DataPreprocessing.ipynb` exploratory notebook
+- `scriptR.ipynb` exploratory notebook
 
 *Please create a `NLP-project-on-Yelp-data/data/` folder and put all the four json files in it. Then set your working directory as `NLP-project-on-Yelp-data/code/` before run the `main.R`*
 
